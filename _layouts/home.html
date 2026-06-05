@@ -1,0 +1,30 @@
+---
+layout: default
+---
+<main class="home">
+  <section class="home__hero">
+    <h1 class="home__title">{{ site.title }}</h1>
+    <p class="home__tagline">{{ site.tagline }}</p>
+    <div class="home__intro">{{ content }}</div>
+    <div class="home__actions">
+      <a href="{{ '/blog/' | relative_url }}">Read the blog &rarr;</a>
+      <a href="{{ '/about/' | relative_url }}">About us &rarr;</a>
+    </div>
+  </section>
+
+  {%- if site.posts.size > 0 %}
+  <section class="home__recent">
+    <h2>Latest posts</h2>
+    <ul class="post-list">
+      {%- for post in site.posts limit: 5 %}
+      <li class="post-list__item">
+        <a class="post-list__link" href="{{ post.url | relative_url }}">
+          <span class="post-list__title">{{ post.title }}</span>
+          <span class="post-list__meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+        </a>
+      </li>
+      {%- endfor %}
+    </ul>
+  </section>
+  {%- endif %}
+</main>

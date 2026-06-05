@@ -1,0 +1,186 @@
+/* ------------------------------------------------------------------ *
+ * site.css — minimal chrome (nav, footer, home, blog index) layered
+ * on top of the Pandoc theme.css design tokens.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --site-max-width: 745px;
+  --site-gap: 26px;
+}
+
+/* The theme reserves a large top padding for the article title block.
+ * We drive top spacing per-section instead so the nav can sit at the top. */
+body {
+  padding-top: 0;
+}
+
+/* ----- Navigation -------------------------------------------------- */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Full-width nav/footer: brand pinned left, links pinned right, spanning the
+   whole page with responsive side padding (Thinking Machines style). */
+.site-nav__inner,
+.site-footer__inner {
+  max-width: none;
+  margin: 0;
+  padding: 16px clamp(20px, 4vw, 56px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-family-sans);
+}
+
+.site-nav__brand {
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  color: var(--color-text) !important;
+}
+.site-nav__brand:hover {
+  text-decoration: none;
+}
+
+.site-nav__links a {
+  margin-left: 28px;
+  font-size: 16px;
+  color: var(--color-text-secondary) !important;
+}
+.site-nav__links a:hover {
+  color: var(--color-text) !important;
+  text-decoration: none;
+}
+
+/* ----- Footer ------------------------------------------------------ */
+.site-footer {
+  max-width: none;
+  width: 100%;
+  margin: calc(4 * var(--line-height)) 0 0 0;
+  border-top: 1px solid var(--color-border);
+}
+.site-footer__inner {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ----- Section top spacing (body padding-top was removed) ---------- */
+.home,
+.page-header,
+.post-header {
+  padding-top: calc(2 * var(--line-height));
+}
+
+/* ----- Home -------------------------------------------------------- */
+.home__hero {
+  padding: calc(1.5 * var(--line-height)) 0 var(--line-height);
+}
+.home__title {
+  font-size: var(--title-font-size);
+  line-height: var(--title-line-height);
+  font-weight: 600;
+  margin: 0;
+}
+.home__tagline {
+  margin-top: 10px;
+  font-size: 20px;
+  color: var(--color-text-secondary);
+}
+.home__intro {
+  max-width: 36rem;
+}
+.home__intro p {
+  margin-top: var(--line-height);
+}
+.home__actions {
+  margin-top: calc(1.5 * var(--line-height));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.home__actions a {
+  font-size: 16px;
+}
+.home__recent {
+  margin-top: calc(2.5 * var(--line-height));
+}
+.home__recent h2 {
+  font-size: var(--h2-font-size);
+  color: var(--color-text-secondary);
+}
+
+/* ----- Post list (home + blog index) ------------------------------- */
+.post-list {
+  list-style: none !important;
+  margin: var(--line-height) 0 0 0 !important;
+  padding: 0 !important;
+}
+.post-list__item {
+  margin: 0;
+  border-top: 1px solid var(--color-border);
+}
+.post-list__item:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+.post-list__link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 0;
+  color: var(--color-text) !important;
+}
+.post-list__link:hover {
+  text-decoration: none;
+}
+.post-list__link:hover .post-list__title {
+  color: var(--color-link);
+}
+.post-list__title {
+  font-size: 18px;
+  line-height: 1.4;
+}
+.post-list__meta {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ----- Table of contents: keep it in the crisp sans face ----------- */
+nav#TOC,
+nav#TOC a,
+nav#TOC label {
+  font-family: var(--font-family-sans);
+}
+
+/* ----- About: people grids ----------------------------------------- */
+.people {
+  list-style: none !important;
+  margin: var(--line-height) 0 0 0 !important;
+  padding: 0 !important;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px 24px;
+}
+.people > li {
+  padding: 4px 0;
+}
+.people .role {
+  display: block;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+/* ----- Responsive nav/footer spacing ------------------------------- */
+@media screen and (max-width: 600px) {
+  .post-list__link {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

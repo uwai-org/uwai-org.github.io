@@ -1,0 +1,23 @@
+---
+layout: default
+---
+<header class="page-header">
+  <h1 class="title">{{ page.title | default: "Blog" }}</h1>
+  {%- if page.subtitle %}<p class="subtitle">{{ page.subtitle }}</p>{%- endif %}
+</header>
+<main class="page blog-index">
+  {%- if site.posts.size > 0 %}
+  <ul class="post-list">
+    {%- for post in site.posts %}
+    <li class="post-list__item">
+      <a class="post-list__link" href="{{ post.url | relative_url }}">
+        <span class="post-list__title">{{ post.title }}</span>
+        <span class="post-list__meta">{{ post.author | default: site.author }} &middot; {{ post.date | date: "%b %-d, %Y" }}</span>
+      </a>
+    </li>
+    {%- endfor %}
+  </ul>
+  {%- else %}
+  <p>No posts yet. Check back soon.</p>
+  {%- endif %}
+</main>

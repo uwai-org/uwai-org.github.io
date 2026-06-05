@@ -1,0 +1,58 @@
+---
+layout: default
+---
+<header class="post-header">
+  <h1 class="title">{{ page.title }}</h1>
+  {%- if page.subtitle %}<p class="subtitle">{{ page.subtitle }}</p>{%- endif %}
+  <p class="author">{{ page.author | default: site.author }}</p>
+  <p class="date before-toc">{{ page.date | date: "%B %-d, %Y" }}</p>
+</header>
+
+<nav id="TOC" role="doc-toc">
+  <label for="toc-toggle" class="margin-toggle">Contents</label>
+  <input type="checkbox" id="toc-toggle" class="margin-toggle">
+</nav>
+
+<main>
+  {{ content }}
+  <p class="signoff"><a href="{{ '/blog/' | relative_url }}">&larr; All posts</a></p>
+</main>
+
+<script>
+  (function () {
+    var article = document.querySelector('main');
+    var toc = document.getElementById('TOC');
+    if (!article || !toc) return;
+    var headings = article.querySelectorAll('h2, h3');
+    if (!headings.length) { toc.style.display = 'none'; return; }
+
+    var list = document.createElement('ul');
+    var currentTop = null;
+    var currentSub = null;
+
+    headings.forEach(function (h) {
+      if (!h.id) {
+        h.id = h.textContent.trim().toLowerCase().replace(/[^\w]+/g, '-');
+      }
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+
+      if (h.tagName === 'H2') {
+        list.appendChild(li);
+        currentTop = li;
+        currentSub = null;
+      } else {
+        if (!currentSub) {
+          currentSub = document.createElement('ul');
+          (currentTop || list).appendChild(currentSub);
+        }
+        currentSub.appendChild(li);
+      }
+    });
+
+    toc.appendChild(list);
+  })();
+</script>

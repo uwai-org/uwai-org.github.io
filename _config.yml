@@ -1,0 +1,43 @@
+title: WAI
+tagline: Incubating open-source AI projects and research
+description: >-
+  WAI is a student-led organization formed by PhD students in the University of
+  Washington CS NLP group, incubating open-source projects and research.
+author: WAI
+lang: en
+
+# Org-pages site is served from the domain root.
+url: "https://uwai-org.github.io"
+baseurl: ""
+
+# Use Pandoc as the Markdown converter so blog posts get true Tufte-style
+# margin sidenotes (via pandoc-sidenote), KaTeX math, and smart typography.
+markdown: Pandoc
+highlighter: none
+
+pandoc:
+  extensions:
+    - from: "markdown+smart+tex_math_single_backslash"
+    - lua-filter: "pandoc-sidenote.lua"
+    - katex
+
+plugins:
+  - jekyll-feed
+  - jekyll-pandoc
+
+permalink: /blog/:title/
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor
+  - .github
+  - pandoc-sidenote.lua
