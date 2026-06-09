@@ -7,7 +7,7 @@ author: WAI
 lang: en
 
 # Org-pages site is served from the domain root.
-url: "https://uwai-org.github.io"
+url: "https://wai-org.com"
 baseurl: ""
 
 # Use Pandoc as the Markdown converter so blog posts get true Tufte-style
