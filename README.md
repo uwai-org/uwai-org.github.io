@@ -25,26 +25,9 @@ and select **GitHub Actions**. (This only needs to be done once.)
 
 ## Writing a blog post
 
-Add a Markdown file to `_posts/` named `YYYY-MM-DD-title.md` with front matter:
-
-```markdown
----
-title: "Your post title"
-subtitle: "Optional subtitle"
-author: Your Name
-date: 2026-05-11
-math: true   # only if the post uses math
----
-
-Your content...
-```
-
-Then push to `main`. Useful Markdown features:
-
-- **Sidenotes:** any footnote becomes a margin note. Inline footnotes work too:
-  `some text.^[This becomes a sidenote.]`
-- **Math:** set `math: true`, then use `$inline$` and `$$display$$`.
-- **Headings:** `##` and `###` are collected into the floating table of contents.
+See [`docs/writing-posts.md`](docs/writing-posts.md) for the full guide: front
+matter, sidenotes, math, code blocks, and the table of contents. In short, add
+a Markdown file to `_posts/` named `YYYY-MM-DD-title.md` and push to `main`.
 
 ## Running locally
 
