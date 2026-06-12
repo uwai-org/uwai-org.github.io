@@ -1,25 +1,32 @@
 ---
 layout: page
 title: About
-subtitle: A student-led organization incubating open-source AI projects and research.
-description: About WAI, a student-led organization from the University of Washington CS NLP group.
+subtitle: Open agentic research.
+description: About WAI, a student-led organization from the University of Washington CS / NLP group.
 permalink: /about/
 ---
 
 WAI is a student-led organization formed by PhD students in the University of
-Washington CS NLP group. Our mission is to make AI research and tools accessible
-to everyone by incubating open-source projects, datasets, and systems, and by
-sharing our work openly.
+Washington CS / NLP group. We work on agentic research across the full stack:
+data, training, and evaluation.
 
-We conduct research, build open-source software, and support early-stage
-projects that grow out of the lab. We believe science is better when it is
-shared, and we publish code, write-ups, and findings as we go.
+AI has advanced faster than the understanding of it. Knowledge of how agents
+are built — what data they learn from, how they are trained, how they are
+judged — sits inside a few labs. We think it should be public.
+
+So we do three things. We do research on agents. We open-source what we build —
+data, code, and systems. And we host tutorials and seminars on what is
+happening at the frontier. Science is better when it is shared, and we publish
+code, write-ups, and findings as we go.
 
 ## Our story
 
-WAI grew out of informal collaborations between PhD students in the UW CS NLP
-group. *(Placeholder: a short paragraph on how the group started, its goals, and
-what it is becoming. Replace this with the real story.)*
+WAI started on a walk. A few of us were talking about how the field was
+at a fork in the road: frontier labs publish less and less, and academia drifts
+further from where the systems are actually built. Meanwhile more people than
+ever want to understand and use them. The gap between what is known and what is
+shared keeps growing. We bridge that gap by building and sharing frontier AI
+agents.
 
 ## Organizers
 
@@ -54,14 +61,14 @@ what it is becoming. Replace this with the real story.)*
 
 ## Projects
 
-WAI incubates open-source projects led by its members. *(Placeholder list —
-replace with real projects and links.)*
+WAI incubates open-source projects led by its members.
 
-- **Project One** — a one-line description of what it does.
-- **Project Two** — a one-line description of what it does.
+- **TMax** — an open recipe for state-of-the-art terminal agents.
+- **Humanity Last System** — a one-line description of what it does.
 - **Project Three** — a one-line description of what it does.
 
 ## Get in touch
 
-Interested in collaborating or contributing? *(Placeholder: add an email,
-GitHub org link, or contact form here.)*
+Interested in collaborating or contributing? Reach out at
+[wai.org.research@gmail.com](mailto:wai.org.research@gmail.com) or follow us on
+[Twitter](https://x.com/waiorg).
