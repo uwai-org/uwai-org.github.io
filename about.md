@@ -23,22 +23,34 @@ what it is becoming. Replace this with the real story.)*
 
 ## Organizers
 
-<ul class="people">
-  <li>Organizer One<span class="role">PhD Student, UW CSE</span></li>
-  <li>Organizer Two<span class="role">PhD Student, UW CSE</span></li>
-  <li>Organizer Three<span class="role">PhD Student, UW CSE</span></li>
-  <li>Organizer Four<span class="role">PhD Student, UW CSE</span></li>
-  <li>Organizer Five<span class="role">PhD Student, UW CSE</span></li>
-  <li>Organizer Six<span class="role">PhD Student, UW CSE</span></li>
+<ul class="people" data-shuffle>
+  <li><a href="https://oseyincs.io/about/">Junjie Oscar Yin</a><span class="role">PhD Student, UW CSE</span></li>
+  <li><a href="https://rulinshao.github.io/">Rulin Shao</a><span class="role">PhD Student, UW CSE</span></li>
+  <li>Steven Gao<span class="role">PhD Student, UW CSE</span></li>
 </ul>
 
 ## Advisors
 
-<ul class="people">
-  <li>Advisor One<span class="role">Faculty, UW CSE</span></li>
-  <li>Advisor Two<span class="role">Faculty, UW CSE</span></li>
-  <li>Advisor Three<span class="role">Faculty, UW CSE</span></li>
+<ul class="people" data-shuffle>
+  <li><a href="https://homes.cs.washington.edu/~lsz/">Luke Zettlemoyer</a><span class="role">Faculty, UW CSE</span></li>
+  <li><a href="https://hannaneh.ai/">Hanna Hajishirzi</a><span class="role">Faculty, UW CSE</span></li>
 </ul>
+
+<script>
+  (function () {
+    function shuffle(list) {
+      var items = Array.prototype.slice.call(list.children);
+      for (var i = items.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = items[i];
+        items[i] = items[j];
+        items[j] = tmp;
+      }
+      items.forEach(function (item) { list.appendChild(item); });
+    }
+    document.querySelectorAll('ul.people[data-shuffle]').forEach(shuffle);
+  })();
+</script>
 
 ## Projects
 
