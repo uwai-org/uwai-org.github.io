@@ -24,16 +24,16 @@ what it is becoming. Replace this with the real story.)*
 ## Organizers
 
 <ul class="people" data-shuffle>
-  <li><a href="https://oseyincs.io/about/">Junjie Oscar Yin</a><span class="role">PhD Student, UW CSE</span></li>
-  <li><a href="https://rulinshao.github.io/">Rulin Shao</a><span class="role">PhD Student, UW CSE</span></li>
-  <li>Steven Gao<span class="role">PhD Student, UW CSE</span></li>
+  <li><a href="https://oseyincs.io/about/">Junjie Oscar Yin</a></li>
+  <li><a href="https://rulinshao.github.io/">Rulin Shao</a></li>
+  <li>Steven Gao</li>
 </ul>
 
 ## Advisors
 
 <ul class="people" data-shuffle>
-  <li><a href="https://homes.cs.washington.edu/~lsz/">Luke Zettlemoyer</a><span class="role">Faculty, UW CSE</span></li>
-  <li><a href="https://hannaneh.ai/">Hanna Hajishirzi</a><span class="role">Faculty, UW CSE</span></li>
+  <li><a href="https://homes.cs.washington.edu/~lsz/">Luke Zettlemoyer</a></li>
+  <li><a href="https://hannaneh.ai/">Hanna Hajishirzi</a></li>
 </ul>
 
 <script>
