@@ -64,7 +64,12 @@ agents.
 
 WAI incubates open-source projects led by its members.
 
-- **TMax** — an open recipe for state-of-the-art terminal agents.
+### [TMax](/blog/tmax/)
+
+An open recipe for state-of-the-art terminal agents.
+
+**TMax team:** Hamish Ivison, Junjie Oscar Yin, Rulin Shao, Teng Xiao, Nathan Lambert, Hannaneh Hajishirzi
+
 <!-- - **Humanity Last System** — a one-line description of what it does. -->
 <!-- - **Project Three** — a one-line description of what it does. -->
 
@@ -72,4 +77,4 @@ WAI incubates open-source projects led by its members.
 
 Interested in collaborating or contributing? Reach out at
 [wai.org.research@gmail.com](mailto:wai.org.research@gmail.com) or follow us on
-[Twitter](https://x.com/waiorg).
+Twitter [@waiorg](https://x.com/waiorg).
