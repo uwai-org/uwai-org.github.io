@@ -6,12 +6,20 @@
 :root {
   --site-max-width: 745px;
   --site-gap: 26px;
+  /* Height of the sticky top nav (16px padding x2 + ~24px brand line + 1px border). */
+  --site-nav-height: 58px;
 }
 
 /* The theme reserves a large top padding for the article title block.
  * We drive top spacing per-section instead so the nav can sit at the top. */
 body {
   padding-top: 0;
+}
+
+/* Offset in-page anchor jumps (e.g. TOC links) so headings land below the
+   sticky top nav instead of hiding behind it. */
+html {
+  scroll-padding-top: calc(var(--site-nav-height) + 12px);
 }
 
 /* ----- Navigation -------------------------------------------------- */
@@ -157,6 +165,108 @@ nav#TOC,
 nav#TOC a,
 nav#TOC label {
   font-family: var(--font-family-sans);
+}
+
+/* Keep the sticky TOC clear of the sticky top nav so its first entries
+   aren't hidden behind it while scrolling. Only applies at the width where
+   the theme floats the TOC into the left margin. */
+@media screen and (min-width: calc(745px + 2 * (52px + 206px + 52px) - 1px)) {
+  nav#TOC {
+    top: calc(var(--site-nav-height) + 12px);
+    max-height: calc(100vh - var(--site-nav-height) - 2 * var(--line-height));
+  }
+}
+
+/* Give section headings more breathing room above their body text; the
+   theme's default (--h2-margin-bottom: 6px) reads as cramped next to the
+   ~line-height paragraph rhythm. */
+main h2 + *,
+main h2 + p {
+  margin-top: calc(0.6 * var(--line-height));
+}
+
+/* ----- Citation: render the cite blocks as clear, boxed code -------- */
+.citation pre {
+  background-color: var(--color-inline-code-bg);
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 8px;
+  padding: calc(0.6 * var(--line-height)) 16px;
+  overflow-x: auto;
+}
+.citation pre > code {
+  padding: 0;
+}
+
+/* ----- Post hero: centered title / authors / affiliations / date --- */
+.post-hero {
+  text-align: center;
+  padding-top: calc(2 * var(--line-height));
+  margin-bottom: var(--line-height);
+}
+.post-hero h1.title {
+  margin-top: 0;
+  margin-bottom: calc(0.75 * var(--line-height));
+}
+.post-hero h1.title .title-logo {
+  display: inline-block;
+  height: 1.65em;
+  width: auto;
+  margin: 0 0.15em 0 0;
+  vertical-align: -0.33em;
+}
+.post-hero .byline {
+  font-family: var(--font-family-sans);
+  font-size: 16px;
+  line-height: 24px;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+.post-hero .affiliations {
+  display: inline-block;
+  margin: 12px auto 0;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 999px;
+  background-color: var(--color-table-heading);
+  font-family: var(--font-family-sans);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-secondary);
+}
+.post-hero .byline p,
+.post-hero .affiliations p,
+.post-hero .post-date p {
+  margin: 0;
+}
+.post-hero .post-date {
+  font-family: var(--font-family-sans);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+}
+
+/* ----- TL;DR callout box ------------------------------------------- */
+.tldr {
+  margin-top: var(--line-height);
+  margin-bottom: var(--line-height);
+  padding: calc(0.75 * var(--line-height)) calc(1.25 * var(--line-height));
+  background-color: var(--color-inline-code-bg);
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 10px;
+}
+.tldr > :first-child {
+  margin-top: 0;
+}
+.tldr > :last-child {
+  margin-bottom: 0;
+}
+.tldr p {
+  margin-top: calc(0.5 * var(--line-height));
+}
+.tldr .tldr-label {
+  font-family: var(--font-family-sans);
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 /* ----- About: people grids ----------------------------------------- */
