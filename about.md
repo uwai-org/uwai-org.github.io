@@ -41,6 +41,7 @@ agents.
 <ul class="people" data-shuffle>
   <li><a href="https://homes.cs.washington.edu/~lsz/">Luke Zettlemoyer</a></li>
   <li><a href="https://hannaneh.ai/">Hanna Hajishirzi</a></li>
+  <li><a href="https://koh.pw/">Pang Wei Koh</a></li>
 </ul>
 
 <script>
