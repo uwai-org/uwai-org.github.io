@@ -65,8 +65,8 @@ agents.
 WAI incubates open-source projects led by its members.
 
 - **TMax** — an open recipe for state-of-the-art terminal agents.
-- **Humanity Last System** — a one-line description of what it does.
-- **Project Three** — a one-line description of what it does.
+<!-- - **Humanity Last System** — a one-line description of what it does. -->
+<!-- - **Project Three** — a one-line description of what it does. -->
 
 ## Get in touch
 
