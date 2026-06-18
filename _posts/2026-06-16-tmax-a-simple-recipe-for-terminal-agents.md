@@ -39,7 +39,7 @@ June 16, 2026
 **Resources:** 📄 Paper · 👨‍💻 GitHub · 🤗 HF Models · 🤗 HF Dataset · 🐦 Tweet — *links todo.*
 :::
 
-# 1. Terminal agents, and why they're hard to train
+## 1. Terminal agents, and why they're hard to train
 
 Terminal-using agents have quickly become the most popular way people put language models to work. A *terminal agent* is a language model that interacts with a terminal environment: by issuing commands in a shell, calling tools, reading the output, and iterating. It might resolve a failing build, profile a slow service, recover a corrupted archive, or wire up a multi-service stack. The model plans, runs a command, looks at `stdout`/`stderr`, and tries again. This is now the dominant interface for agentic coding products,[^products] and the tasks these agents are asked to solve keep getting more complex and long-horizon.
 
