@@ -177,12 +177,67 @@ nav#TOC label {
   }
 }
 
+/* Scale post headings up one level for a stronger hierarchy: section (h2)
+   headings render at the h1 scale, and subsection (h3) headings at the h2
+   scale. */
+main h2 {
+  font-size: var(--h1-font-size);
+  line-height: var(--h1-line-height);
+  word-spacing: var(--h1-word-spacing);
+  margin-top: var(--h1-margin-top);
+}
+main h2 code {
+  font-size: var(--h1-code-font-size);
+}
+main h3 {
+  font-size: var(--h2-font-size);
+  line-height: var(--h2-line-height);
+  word-spacing: var(--h2-word-spacing);
+  margin-top: var(--h2-margin-top);
+}
+main h3 code {
+  font-size: var(--h2-code-font-size);
+}
+
 /* Give section headings more breathing room above their body text; the
    theme's default (--h2-margin-bottom: 6px) reads as cramped next to the
    ~line-height paragraph rhythm. */
 main h2 + *,
 main h2 + p {
   margin-top: calc(0.6 * var(--line-height));
+}
+
+/* Subsection (h3) headings, e.g. "2.1 Generation pipeline", sit too close to
+   their body text by default; give them comparable breathing room to h2. */
+main h3 + *,
+main h3 + p {
+  margin-top: calc(0.55 * var(--line-height));
+}
+
+/* ----- Dataset release tags: highlighted orange inline-code links ------ */
+a.dataset-tag {
+  font-family: var(--font-family-mono, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace);
+  font-size: var(--inline-code-font-size, 0.92em);
+  color: #b5530b;
+  background-color: #fbe8d6;
+  border: 1px solid #ecc8a3;
+  border-radius: 5px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+a.dataset-tag:hover {
+  color: #8f3f06;
+  background-color: #f6dcc1;
+  text-decoration: none;
+}
+
+/* Scale selected figures (image + caption) down ~30% and center them. The
+   class lands on the <img>, so we size/center the wrapping <figure>. */
+figure:has(> img.fig-small) {
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ----- Citation: render the cite blocks as clear, boxed code -------- */
