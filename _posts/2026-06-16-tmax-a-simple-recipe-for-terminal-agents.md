@@ -38,7 +38,7 @@ June 16, 2026
 
 [TMax-9B](https://huggingface.co/allenai/tmax-9b){.dataset-tag} reaches **27.2%** on [Terminal Bench 2.0](https://www.tbench.ai/leaderboard/terminal-bench/2.0). Under official Terminal Bench settings this is the strongest open-weights model under 10B we are aware of: it beats 32B terminal agents from prior work and approaches closed models like Claude Haiku 4.5 (29.8%). Scaling the same recipe up, [TMax-27B](https://huggingface.co/allenai/tmax-27b){.dataset-tag} improves to **42.7%**, approaching models 10 to 40× its size like the 1T-parameter Kimi K2.5 (43.2%). 
 
-**Resources:** [📄 Paper](https://github.com/hamishivi/tmax/blob/master/assets/paper.pdf) · [👨‍💻 GitHub](https://github.com/hamishivi/tmax) · [🤗 HF Models](https://huggingface.co/collections/allenai/tmax) · [🤗 HF Dataset](https://huggingface.co/collections/allenai/tmax) · 🐦 Tweet *(todo)*
+**Resources:** [📄 Paper](https://github.com/hamishivi/tmax/blob/master/assets/paper.pdf) · [👨‍💻 GitHub](https://github.com/hamishivi/tmax) · [🤗 HF Models](https://huggingface.co/collections/allenai/tmax) · [🤗 HF Dataset](https://huggingface.co/collections/allenai/tmax) · 🐦 Tweet
 :::
 
 ## 1. Terminal agents, and why they're hard to train
