@@ -5,9 +5,9 @@ date: 2026-06-16
 permalink: /blog/tmax/
 custom_header: true
 description: >-
-  TMax is an open recipe for training strong terminal agents at small
-  scale: a 14,600-environment dataset and a simple outcome-only RL recipe that
-  reaches 27% on Terminal Bench 2.0 with a 9B model.
+  TMax is the strongest open RL recipe for terminal agents to date, bringing
+  open data recipes closer to the frontier: a 14,600-environment dataset and a
+  simple outcome-only RL recipe, with open models from 2B to 27B.
 ---
 
 ::::: {.post-hero}
@@ -29,14 +29,16 @@ June 16, 2026
 ::::
 :::::
 
-![Terminal Bench 2.0 score against model size. Tmax-9B is among the strongest open models under 10B parameters and is competitive with much larger open and closed models. Final numbers (including a 27B variant) are being finalized for the paper.](/assets/img/tmax/teaser.png)
+![Terminal Bench 2.0 vs. model size. TMax dominates the Pareto frontier for models under 32B: TMax-9B is the strongest open model under 10B we compare against, and TMax-27B is competitive with open-weight models an order of magnitude larger.](/assets/img/tmax/teaser.png)
 
 ::: {.tldr}
 [TL;DR]{.tldr-label}
 
-**TMax** is a simple, fully open recipe for training strong terminal agents at small scale. We release two things. The first is **Tmax-15k**, a dataset of **14,600 RL environments** built from a compositional pipeline with explicit control over difficulty and diversity. It is over **2.5× larger** than the next-largest open terminal dataset that releases full environment data. The second is a **simple, outcome-only RL recipe** (GRPO plus a few stability fixes). Our 9B model, **Tmax-9B**, reaches **27.2% on [Terminal Bench 2.0](https://www.tbench.ai/leaderboard/terminal-bench/2.0)**. Under official Terminal Bench settings, this is the strongest open-weights model under 10B we are aware of: it beats 32B terminal agents from prior work and approaches closed models like Claude Haiku 4.5 (29.8%). 
+**TMax** is the strongest open RL recipe for terminal agents to date, bringing open data recipes closer to the frontier. We release two things. The first is **TMax-15k**, a dataset of **14,600 RL environments** built from a compositional pipeline with explicit control over difficulty and diversity. It is over **2.5× larger** than the next-largest open terminal dataset that releases full environment data. The second is a **simple, outcome-only RL recipe** (GRPO plus a few stability fixes), which we use to train a family of open models from **2B to 27B**.
 
-**Resources:** 📄 Paper · 👨‍💻 GitHub · 🤗 HF Models · 🤗 HF Dataset · 🐦 Tweet — *links todo.*
+[TMax-9B](https://huggingface.co/allenai/tmax-9b){.dataset-tag} reaches **27.2%** on [Terminal Bench 2.0](https://www.tbench.ai/leaderboard/terminal-bench/2.0). Under official Terminal Bench settings this is the strongest open-weights model under 10B we are aware of: it beats 32B terminal agents from prior work and approaches closed models like Claude Haiku 4.5 (29.8%). Scaling the same recipe up, [TMax-27B](https://huggingface.co/allenai/tmax-27b){.dataset-tag} improves to **42.7%**, approaching models 10 to 40× its size like the 1T-parameter Kimi K2.5 (43.2%). 
+
+**Resources:** 📄 Paper *(todo)* · [👨‍💻 GitHub](https://github.com/hamishivi/tmax) · [🤗 HF Models](https://huggingface.co/collections/allenai/tmax) · [🤗 HF Dataset](https://huggingface.co/collections/allenai/tmax) · 🐦 Tweet *(todo)*
 :::
 
 ## 1. Terminal agents, and why they're hard to train
@@ -55,8 +57,8 @@ Despite this popularity, there is surprisingly little *open* academic work on tr
 
 TMax closes the data and recipe gaps. We provide a large, difficulty-controlled dataset of complex terminal tasks and a simple RL recipe that produces large, reliable improvements of over **5 points** on Terminal Bench, with gains that transfer across tasks and harnesses. Our contributions are:
 
-1. **Tmax-15k**, a dataset of 14,600 RL environments, over 2.5× larger than prior open terminal datasets and notably harder.
-2. **Open-weights terminal agents** trained on this data. Our best 9B model reaches 27.2% on Terminal Bench 2.0, the strongest open model under 10B we are aware of under official settings.
+1. **TMax-15k**, a dataset of 14,600 RL environments, over 2.5× larger than prior open terminal datasets and notably harder.
+2. **Open-weights terminal agents at 2B/4B/9B/27B** scale, trained on this data. Our best 9B model reaches 27.2% on Terminal Bench 2.0, the strongest open model under 10B we are aware of under official settings.
 3. **A simple, reproducible RL recipe**, with all components released for training the models.
 4. **Evidence that terminal RL generalizes** across harnesses and across tasks, suggesting the model learns real new skills rather than overfitting a single setup.
 
@@ -87,7 +89,7 @@ Because each task is sampled across these axes, the sampler yields combinatorial
 
 **Difficulty via explicit calibration.** To avoid the usual bimodal "trivial or impossible" task split, we calibrate difficulty along two new complexity axes (*task complexity*, from a handful of commands to intricate 30–60-command workflows, and *command complexity*, from bash-only to bash + code + system services) and sample uniformly across buckets. We also go beyond exact string-equality checks with **graded verifiers**: metric thresholds (e.g. accuracy ≥ 0.95), adversarial corpora (accept clean, reject malicious), fuzz equivalence against an oracle, or multi-protocol service checks. Thresholds give a continuous signal for terminal agents to hillclimb, while also increasing turn length. 
 
-We release the full set of RL environments as [TMax-15K](https://huggingface.co/datasets/TMaxxx/TMax-15K){.dataset-tag}.
+We release the full set of RL environments as [TMax-15K](https://huggingface.co/datasets/allenai/tmax-15k){.dataset-tag}.
 
 ### 2.2 Comparing terminal datasets
 
@@ -95,7 +97,7 @@ We annotated our data and six prior datasets with [Gemini-3-Pro](https://deepmin
 
 | Dataset | Size | Pass@1 | Pass@8 | Domain balance | Skill balance |
 | --- | --- | --- | --- | --- | --- |
-| **Tmax-15k (ours)** | **15k** | **42%** | **53%** | **0.998** | **0.732** |
+| **TMax-15k (ours)** | **15k** | **42%** | **53%** | **0.998** | **0.732** |
 | Endless Terminals | 2.4k | 92% | 95% | 0.481 | 0.284 |
 | Open Thoughts Agents | 0.7k | 51% | 60% | 0.292 | 0.153 |
 | TermiGen | 3k | 57% | 66% | 0.646 | 0.477 |
@@ -113,7 +115,7 @@ Second, **difficulty**. Our data is among the hardest of the bunch. Pass@1 is 42
 
 ### 2.3 SFT data and a simple harness
 
-A light SFT warm-up can help stability and performance before RL,[^warmstart] so for our weaker-model experiments on the older [Qwen3-8B](https://huggingface.co/Qwen), we also generate a small SFT dataset. Reusing the same pipeline, we make 2.2k more environments and sample 8 trajectories each from [Qwen3.6-27B](https://huggingface.co/Qwen), for 16.5K trajectories (8K of them successful). We use this SFT data only for the Qwen3-8B runs, and release it as [TMax-SFT-16.5K](https://huggingface.co/datasets/TMaxxx/TMax-SFT-16.5K){.dataset-tag}. 
+A light SFT warm-up can help stability and performance before RL,[^warmstart] so for our weaker-model experiments on the older [Qwen3-8B](https://huggingface.co/Qwen), we also generate a small SFT dataset. Reusing the same pipeline, we make 2.2k more environments and sample 8 trajectories each from [Qwen3.6-27B](https://huggingface.co/Qwen), for 16.5K trajectories (8K of them successful). We use this SFT data only for the Qwen3-8B runs, and release it as [TMax-SFT-16.5K](https://huggingface.co/datasets/allenai/tmax-sft-16.5k){.dataset-tag}. 
 
 Both data generation and RL rollouts run through a simple harness based on [mini-swe-agent](https://github.com/SWE-agent/mini-swe-agent) with a persistent shell. We found the default Terminus-2 harness more brittle with small models, since it expects the agent to send raw keystrokes.
 
@@ -151,33 +153,34 @@ We keep thinking on intermediate turns ("interleaved thinking"), and evaluate on
 
 ### 3.2 TMax-15K outperforms other terminal data
 
-We first hold the model fixed ([Qwen3.5-9B](https://huggingface.co/Qwen)) and vary only the RL dataset. Training on **Tmax-15k gives the strongest Terminal Bench performance of any dataset we tried**. We release the resulting model as [TMax-9B](https://huggingface.co/TMaxxx/TMax-9B){.dataset-tag}.
+We first hold the model fixed ([Qwen3.5-9B](https://huggingface.co/Qwen)) and vary only the RL dataset. Training on **TMax-15k gives the strongest Terminal Bench performance of any dataset we tried**. We release the resulting model as [TMax-9B](https://huggingface.co/allenai/tmax-9b){.dataset-tag}.
 
 | RL dataset | TB Lite | TB 2.1 |
 | --- | --- | --- |
 | None (Qwen3.5-9B) | 41.9 | 16.1 |
 | TermiGen | 49.4 | 25.1 |
 | Endless Terminals | 52.6 | 25.5 |
+| OpenThinker-Agent | 53.0 | 25.1 |
 | TerminalTraj | 45.8 | 18.0 |
 | CLI-Gym | 50.7 | 25.1 |
 | SWE-Smith | 47.2 | 21.0 |
-| **Tmax-15k (ours)** | **57.2** | **28.8** |
+| **TMax-15k (ours)** | **57.2** | **28.8** |
 
 *RL on Qwen3.5-9B across datasets; mean over 3 runs. Our data improve Terminal Bench 2.1 by nearly 13 points over the base model.*
 
- We find that TMax-15K stays difficult throughout training. If we plot the average number of steps the model takes during training, **Tmax-15k consistently drives more steps per episode** than other datasets. The tasks keep demanding real, multi-step work rather than being solved in a couple of commands.
+ We find that TMax-15K stays difficult throughout training. If we plot the average number of steps the model takes during training, **TMax-15k consistently drives more steps per episode** than other datasets. The tasks keep demanding real, multi-step work rather than being solved in a couple of commands.
 
-![Average steps per episode over training (15-step smoothing). Training on Tmax-15k sustains higher step counts than other datasets, indicating the tasks stay difficult throughout.](/assets/img/tmax/step-count.png)
+![Average steps per episode over training (15-step smoothing). Training on TMax-15k sustains higher step counts than other datasets, indicating the tasks stay difficult throughout.](/assets/img/tmax/step-count.png)
 
 We also see the model *learn to think more* over the course of training: the number of tokens it spends per assistant turn, for both reasoning and tool-calling, climbs steadily. This is the agentic analogue of inference-time reasoning scaling, and it tracks the model's improving performance.
 
 ![Average assistant-turn and tool-call length (tokens) over training. Per-turn output grows, suggesting the model learns to make better use of inference-time compute.](/assets/img/tmax/turn-tokens.png){.fig-small}
 
-### 3.3 Tmax-9B outperforms prior small terminal agents
+### 3.3 TMax-9B outperforms prior small terminal agents
 
- At **27.2%** on Terminal Bench 2.0, TMax-9B is the best open-weights model under 10B we compare against under official Terminal Bench settings,[^settings] beating 32B terminal agents from several prior works and approaching closed offerings like Claude Haiku 4.5 (29.8%). 
- 
- The same recipe lifts the smaller Qwen3.5 models too: Tmax-2B and Tmax-4B reach 2.9% and 18.9% (from 2.3% and 16.6%). A 27B variant is in progress [TODO]
+At **27.2%** on Terminal Bench 2.0, TMax-9B is the best open-weights model under 10B we compare against under official Terminal Bench settings,[^settings] beating 32B terminal agents from several prior works and approaching closed offerings like Claude Haiku 4.5 (29.8%).
+
+The same recipe scales across the whole Qwen3.5 family. TMax-2B and TMax-4B reach 2.9% and 18.9% (from 2.3% and 16.6%), and [TMax-27B](https://huggingface.co/allenai/tmax-27b){.dataset-tag} (built on Qwen3.6-27B) reaches **42.7%** (from 39.6%). At that size, TMax-27B approaches models that are a few order of magnitude larger, like the 1T-parameter Kimi K2.5 (43.2%) and the 230B MiniMax M2.7 (45.1%).
 
 [^settings]: Terminal Bench scores can be sensitive to harness and timeout settings. With non-standard settings (for example, overriding the default timeouts) the base Qwen3.5-9B can score noticeably higher, so we report all numbers under official Terminal Bench settings for a fair comparison.
 
@@ -187,18 +190,18 @@ Finally, we show our training and data recipe generalizes well across three impo
 it is asked to do), harnesses (i.e., what tools and prompts it is provided when performing tasks), and
 model families (i.e., the starting point model).
 
-**Across tasks.** Evaluating Tmax-9B beyond Terminal Bench, performance improves across the board, including on a non-agentic math benchmark:
+**Across tasks.** Evaluating TMax-9B beyond Terminal Bench, performance improves across the board, including on a non-agentic math benchmark:
 
-| Benchmark | Qwen3.5-9B | Tmax-9B |
+| Benchmark | Qwen3.5-9B | TMax-9B |
 | --- | --- | --- |
 | SWE-Bench Verified | 44.0 | **53.5** |
 | AIME'24/25 (terminal-agent) | 73.3 | **91.1** |
 
 *Generalization to other tasks; mean over 3 runs. RL on terminal data improves an agentic SWE benchmark by ~9 points and math by ~18.*
 
-**Across harnesses.** When we swap out the harness for different prompts and tools than the one used during RL, Tmax-9B improves by **roughly 9 to 15 points in every harness we tried**, even ones it never saw in training.
+**Across harnesses.** When we swap out the harness for different prompts and tools than the one used during RL, TMax-9B improves by **roughly 9 to 15 points in every harness we tried**, even ones it never saw in training.
 
-| Harness | Qwen3.5-9B | Tmax-9B |
+| Harness | Qwen3.5-9B | TMax-9B |
 | --- | --- | --- |
 | Ours (mini-swe-agent + persistent shell) | 41.9 | **57.2** |
 | OpenHands | 36.0 | **46.9** |
@@ -251,7 +254,7 @@ We saw the same instabilities on Qwen3-8B, so this is not a quirk of one model f
 
 ## 5. Conclusion
 
-TMax is a simple recipe for training strong terminal agents at small scale. Its two pieces are **Tmax-15k**, a difficulty- and diversity-controlled dataset of 14,600 RL environments, and a plain DPPO training recipe. Together they are enough to train **Tmax-9B**, which is among the strongest open-weights models under 10B at the time of writing. The gains transfer to SWE-Bench, to AIME, and across harnesses, which is evidence that the model has genuinely improved at using a terminal rather than memorizing one setup. We release the data, models, and code as a starting point for others.
+TMax is a simple recipe for training strong terminal agents at small scale. Its two pieces are **TMax-15k**, a difficulty- and diversity-controlled dataset of 14,600 RL environments, and a plain DPPO training recipe. Together they are enough to train **TMax-9B** and **TMax-27B**, which is among the strongest open-weights models under 10B and 30B at the time of writing, respectively. The gains transfer to SWE-Bench, to AIME, and across harnesses, which is evidence that the model has genuinely improved at using a terminal rather than memorizing one setup. We release the data, models, and code as a starting point for others.
 
 **Where we'd go next.** Follow from our results, three directions naturally falls out. Better training stability, more complex harnesses, and more complex data.
 
@@ -259,7 +262,7 @@ We hope TMax serves as a strong baseline and a useful testbed for the community 
 
 ## Acknowledgements
 
-We thank members of UW NLP and the Open Ecosystem team at Ai2 for feedback and discussion throughout this project, Michael Noukhovitch for useful discussions on RL stability, and the Ai2 Beaker team for help with infrastructure.
+TMax is a collaboration between the University of Washington and the Allen Institute for AI (Ai2). We thank members of UW NLP and the Open Ecosystem team at Ai2 for feedback and discussion throughout this project, Michael Noukhovitch for useful discussions on RL stability, and the Ai2 Beaker team for help with infrastructure.
 
 ## Citation
 

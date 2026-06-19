@@ -64,7 +64,7 @@ agents.
 
 ### [TMax](/blog/tmax/) — an open recipe for state-of-the-art terminal agents.
 
-**Team:** Hamish Ivison, Junjie Oscar Yin, Rulin Shao, Teng Xiao, Nathan Lambert, Hannaneh Hajishirzi
+**Team:** Hamish Ivison\*, Junjie Oscar Yin\*, Rulin Shao, Teng Xiao, Nathan Lambert, Hannaneh Hajishirzi
 
 <!-- - **Humanity Last System** — a one-line description of what it does. -->
 <!-- - **Project Three** — a one-line description of what it does. -->

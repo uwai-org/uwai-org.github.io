@@ -4,6 +4,7 @@ subtitle: "Why we exist, and what we are building"
 author: WAI
 date: 2026-05-11
 description: An introduction to WAI and what to expect from this blog.
+published: false
 ---
 
 This is the first post on the WAI blog.
