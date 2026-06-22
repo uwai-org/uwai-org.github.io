@@ -3,7 +3,6 @@ layout: home
 title: ""
 ---
 
-WAI is a student-led organization formed by PhD students in the University of
-Washington NLP group. We work on agentic research across the full stack —
-data, training, and evaluation — and we share what we build: code, data,
+WAI is a research organization formed by NLP / ML / System PhDs from the University of Washington. We work on agentic research across the full stack —
+data, training, and evaluation. And we share what we build: code, data,
 systems, and write-ups.

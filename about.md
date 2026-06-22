@@ -23,8 +23,8 @@ WAI started on a walk. A few of us were talking about how the field was
 at a fork in the road: frontier labs publish less and less, and academia drifts
 further from where the systems are actually built. Meanwhile more people than
 ever want to understand and use them. The gap between what is known and what is
-shared keeps growing. We bridge that gap by building and sharing frontier AI
-agents.
+shared keeps growing. At WAI, we bridge that gap by building AI
+agents and openly sharing how we do it.
 
 ## Organizers
 
