@@ -2,12 +2,11 @@
 layout: page
 title: About
 subtitle: Open agentic research.
-description: About WAI, a student-led organization from the University of Washington CS / NLP group.
+description: About WAI, a research organization formed by NLP / ML / System PhDs from the University of Washington.
 permalink: /about/
 ---
 
-WAI is a student-led organization formed by PhD students in the University of
-Washington CS / NLP group. We work on agentic research across the full stack:
+WAI is a research organization formed by NLP / ML / System PhD students from the University of Washington. We work on agentic research across the full stack:
 data, training, and evaluation.
 
 AI has advanced faster than the understanding of it. Knowledge of how agents

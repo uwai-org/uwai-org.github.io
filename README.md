@@ -1,7 +1,7 @@
 # WAI website
 
 Source for [uwai-org.github.io](https://uwai-org.github.io) — the site for WAI,
-a student-led organization from the University of Washington CS NLP group.
+a research organization formed by NLP / ML / System PhDs from the University of Washington.
 
 It's a minimal [Jekyll](https://jekyllrb.com/) site with:
 
