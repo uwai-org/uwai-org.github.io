@@ -12,12 +12,11 @@ data, training, and evaluation.
 
 AI has advanced faster than the understanding of it. Knowledge of how agents
 are built — what data they learn from, how they are trained, how they are
-judged — sits inside a few labs. We think it should be public.
+judged — is largely closed source. We think the science behind them should be open.
 
-So we do three things. We do research on agents. We open-source what we build —
-data, code, and systems. And we host tutorials and seminars on what is
+So we do three things. We do research on agents. We open-source what we build: data, code, and systems. And we host tutorials and seminars on what is
 happening at the frontier. Science is better when it is shared, and we publish
-code, write-ups, and findings as we go.
+write-ups and findings as we go.
 
 ## Our story
 
