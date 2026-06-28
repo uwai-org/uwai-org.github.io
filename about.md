@@ -41,6 +41,7 @@ agents and openly sharing how we do it.
   <li><a href="https://homes.cs.washington.edu/~lsz/">Luke Zettlemoyer</a></li>
   <li><a href="https://hannaneh.ai/">Hanna Hajishirzi</a></li>
   <li><a href="https://koh.pw/">Pang Wei Koh</a></li>
+  <li><a href="https://natolambert.com/">Nathan Lambert</a></li>
 </ul>
 
 <script>
