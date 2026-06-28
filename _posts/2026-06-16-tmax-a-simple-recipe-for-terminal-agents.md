@@ -266,25 +266,26 @@ TMax is a collaboration between the University of Washington and the Allen Insti
 
 ## Citation
 
-[TODO]
-
 ::: {.citation}
 Please cite this work as:
 
 ```
 Ivison, Hamish and Yin, Junjie Oscar and Shao, Rulin and Xiao, Teng and
-Lambert, Nathan and Hajishirzi, Hannaneh, "TMax: A Simple Recipe for Terminal
-Agents", arXiv preprint arXiv:XXXX.XXXXX, 2026.
+Lambert, Nathan and Hajishirzi, Hannaneh, "Tmax: A simple recipe for terminal
+agents", arXiv preprint arXiv:2606.23321, 2026.
 ```
 
 Or use the BibTeX citation:
 
 ```
-@article{ivison2026tmax,
-  author  = {Ivison, Hamish and Yin, Junjie Oscar and Shao, Rulin and Xiao, Teng and Lambert, Nathan and Hajishirzi, Hannaneh},
-  title   = {TMax: A Simple Recipe for Terminal Agents},
-  journal = {arXiv preprint arXiv:XXXX.XXXXX},
-  year    = {2026},
+@misc{ivison2026tmaxsimplerecipeterminal,
+      title={Tmax: A simple recipe for terminal agents},
+      author={Hamish Ivison and Junjie Oscar Yin and Rulin Shao and Teng Xiao and Nathan Lambert and Hannaneh Hajishirzi},
+      year={2026},
+      eprint={2606.23321},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2606.23321},
 }
 ```
 :::

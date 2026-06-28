@@ -29,6 +29,7 @@ agents and openly sharing how we do it.
 ## Organizers
 
 <ul class="people" data-shuffle>
+  <li><a href="https://ivison.id.au/">Hamish Ivison</a></li>
   <li><a href="https://oseyincs.io/about/">Junjie Oscar Yin</a></li>
   <li><a href="https://rulinshao.github.io/">Rulin Shao</a></li>
   <li>Steven Gao</li>
