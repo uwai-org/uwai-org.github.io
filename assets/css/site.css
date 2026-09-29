@@ -420,6 +420,14 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
   line-height: var(--figcaption-line-height);
   color: var(--color-text-secondary);
 }
+/* Wide charts (.wide.extra-wide, from theme.css) keep their controls and caption on the text column. */
+@media screen and (min-width: calc(745px + 2 * (52px + 206px + 52px))) {
+  .clm-chart.wide.extra-wide > .chart-controls,
+  .clm-chart.wide.extra-wide > p.chart-caption {
+    margin-left: calc(((var(--extra-wide-scale-factor) - 1) / 2) * var(--main-width));
+    max-width: var(--main-width);
+  }
+}
 .clm-tabs.ready > .tab {
   display: none;
 }

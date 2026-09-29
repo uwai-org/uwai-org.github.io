@@ -152,71 +152,71 @@
 
   // ------------------------------------------------------------------ Coding + deep research Pareto
   CHARTS.pareto = function (d, plot, controls) {
-    var BENCH = [{ key: "BCP", label: "BrowseComp-Plus" }, { key: "TB2.1", label: "TerminalBench 2.1" }, { key: "TBLite", label: "TBLite" }];
-    var MODELS = ["Qwen3.5-9B", "Qwen3.6-27B", "Qwen3.8-27B", "Claude 4.5 Haiku", "Claude 4.6 Sonnet", "Claude 4.6 Opus"].filter(function (m) { return d[m]; });
-    var st = { bench: "BCP", model: "Qwen3.6-27B" };
-    seg(controls, "Benchmark", BENCH, st.bench, function (k) { st.bench = k; draw(); });
+    var BENCH = [["BCP", "BrowseComp-Plus"], ["TB2.1", "TerminalBench 2.1"], ["TBLite", "TBLite"]];
+    var DOM = [[0, 0.28], [0.36, 0.64], [0.72, 1]];
+    var MODELS = ["Qwen3.6-27B", "Qwen3.5-9B"].filter(function (m) { return d[m]; });
+    var st = { model: "Qwen3.6-27B" };
     seg(controls, "Model", opts(MODELS), st.model, function (k) { st.model = k; draw(); });
-    plot.style.height = "440px";
-    var M = { l: 64, r: 24, t: 16, b: 60 };
+    var HEIGHT = 400, M = { l: 56, r: 12, t: 34, b: 58 };
+    plot.style.height = HEIGHT + "px";
 
     function draw() {
-      var pts = (d[st.model][st.bench] || []).map(function (p) { return Object.assign({}, p); });
-      var api = st.model.indexOf("Claude") === 0;
-      var fr = frontier(pts, "cost", "acc");
-      var tx = api ? function (v) { return Math.log10(v); } : function (v) { return v; };
-      var xr = extent(pts.map(function (p) { return tx(p.cost); }), 0.14, api ? 0.15 : 0.3);
-      if (!api) xr[0] = Math.max(0, xr[0]);
-      var yr = extent(pts.map(function (p) { return p.acc; }), 0.16, 5);
-      yr = [Math.max(0, yr[0]), Math.min(100, yr[1] + 4)];
+      var traces = [], ann = [];
+      var lay = layout({ margin: M, showlegend: false });
+      var W = Math.max(480, plot.clientWidth - M.l - M.r), H = HEIGHT - M.t - M.b;
+      BENCH.forEach(function (bench, bi) {
+        var k = bi ? String(bi + 1) : "", xa = "x" + k, ya = "y" + k;
+        var pts = (d[st.model][bench[0]] || []).map(function (p) { return Object.assign({}, p); });
+        var fr = frontier(pts, "cost", "acc");
+        var xr = extent(pts.map(function (p) { return p.cost; }), 0.16, 0.15);
+        xr[0] = Math.max(0, xr[0]);
+        var yr = extent(pts.map(function (p) { return p.acc; }), 0.18, 4);
+        yr = [Math.max(0, yr[0]), Math.min(100, yr[1] + 4)];
 
-      // Place labels in pixel space: try below/above/right/left, keep the first that clears
-      // every marker and every label placed so far.
-      var W = Math.max(200, plot.clientWidth - M.l - M.r), H = 440 - M.t - M.b;
-      function px(p) { return [(tx(p.cost) - xr[0]) / (xr[1] - xr[0]) * W, (1 - (p.acc - yr[0]) / (yr[1] - yr[0])) * H]; }
-      var boxes = pts.map(function (p) { var c = px(p); return [c[0] - 7, c[1] - 7, c[0] + 7, c[1] + 7]; });
-      var ann = [];
-      pts.sort(function (a, b) { return (b.arm === "CLM") - (a.arm === "CLM"); }).forEach(function (p) {
-        var clm = p.arm === "CLM", label = p.arm + (p.flag === "dagger" ? "†" : "");
-        var w = label.length * (clm ? 8.6 : 7.2) + 4, h = clm ? 18 : 16, c = px(p);
-        var cand = clm
-          ? [[0, -12, "center", "bottom"], [12, 0, "left", "middle"], [-12, 0, "right", "middle"], [0, 12, "center", "top"]]
-          : [[0, 11, "center", "top"], [0, -11, "center", "bottom"], [11, 0, "left", "middle"], [-11, 0, "right", "middle"]];
-        var pick = cand[0], best = null;
-        for (var i = 0; i < cand.length; i++) {
-          var o = cand[i], x0 = c[0] + o[0] - (o[2] === "center" ? w / 2 : o[2] === "right" ? w : 0);
-          var y0 = c[1] + o[1] - (o[3] === "middle" ? h / 2 : o[3] === "bottom" ? h : 0);
-          var b = [x0, y0, x0 + w, y0 + h];
-          var clash = b[0] < -30 || b[2] > W + 30 || boxes.some(function (q) { return b[0] < q[2] && b[2] > q[0] && b[1] < q[3] && b[3] > q[1]; });
-          if (!clash) { pick = o; best = b; break; }
-        }
-        if (best) boxes.push(best);
-        ann.push({ x: tx(p.cost), y: p.acc, text: clm ? "<b>CLM</b>" : label, showarrow: false,
-                   xanchor: pick[2], yanchor: pick[3], xshift: pick[0], yshift: -pick[1],
-                   font: { size: clm ? 14 : 12, color: clm ? BLUE : INK } });
+        // Label placement in this subplot's pixel space: try below/above/right/left and keep the
+        // first spot that clears every marker and every label placed so far.
+        var Wi = W * (DOM[bi][1] - DOM[bi][0]);
+        var px = function (p) { return [(p.cost - xr[0]) / (xr[1] - xr[0]) * Wi, (1 - (p.acc - yr[0]) / (yr[1] - yr[0])) * H]; };
+        var boxes = pts.map(function (p) { var c = px(p); return [c[0] - 6, c[1] - 6, c[0] + 6, c[1] + 6]; });
+        pts.sort(function (a, b) { return (b.arm === "CLM") - (a.arm === "CLM"); }).forEach(function (p) {
+          var clm = p.arm === "CLM", w = p.arm.length * (clm ? 8 : 6.4) + 4, h = clm ? 17 : 15, c = px(p);
+          var cand = clm
+            ? [[0, -11, "center", "bottom"], [11, 0, "left", "middle"], [-11, 0, "right", "middle"], [0, 11, "center", "top"]]
+            : [[0, 10, "center", "top"], [0, -10, "center", "bottom"], [10, 0, "left", "middle"], [-10, 0, "right", "middle"]];
+          var pick = cand[0], placed = null;
+          for (var i = 0; i < cand.length; i++) {
+            var o = cand[i], x0 = c[0] + o[0] - (o[2] === "center" ? w / 2 : o[2] === "right" ? w : 0);
+            var y0 = c[1] + o[1] - (o[3] === "middle" ? h / 2 : o[3] === "bottom" ? h : 0);
+            var b = [x0, y0, x0 + w, y0 + h];
+            var clash = b[0] < -20 || b[2] > Wi + 20 || b[1] < -10 || b[3] > H + 10 ||
+              boxes.some(function (q) { return b[0] < q[2] && b[2] > q[0] && b[1] < q[3] && b[3] > q[1]; });
+            if (!clash) { pick = o; placed = b; break; }
+          }
+          if (placed) boxes.push(placed);
+          ann.push({ x: p.cost, y: p.acc, xref: xa, yref: ya, text: clm ? "<b>CLM</b>" : p.arm, showarrow: false,
+                     xanchor: pick[2], yanchor: pick[3], xshift: pick[0], yshift: -pick[1],
+                     font: { size: clm ? 13 : 11, color: clm ? BLUE : INK } });
+        });
+
+        var hover = function (p) {
+          return "<b>" + p.arm + "</b> · " + bench[1] + "<br>accuracy " + p.acc.toFixed(1) + "%<br>" +
+            p.cost.toFixed(2) + " PFLOPs / question<extra></extra>";
+        };
+        var base = pts.filter(function (p) { return p.arm !== "CLM"; }), clm = pts.filter(function (p) { return p.arm === "CLM"; });
+        traces.push(
+          { type: "scatter", mode: "lines", xaxis: xa, yaxis: ya, x: fr.map(function (p) { return p.cost; }), y: fr.map(function (p) { return p.acc; }),
+            line: { color: rgba(BLUE, 0.55), width: 1.5, dash: "dash" }, hoverinfo: "skip" },
+          { type: "scatter", mode: "markers", xaxis: xa, yaxis: ya, x: base.map(function (p) { return p.cost; }), y: base.map(function (p) { return p.acc; }),
+            marker: { size: 10, color: "#fff", line: { color: "#333", width: 1.3 } }, hovertemplate: base.map(hover) },
+          { type: "scatter", mode: "markers", xaxis: xa, yaxis: ya, x: clm.map(function (p) { return p.cost; }), y: clm.map(function (p) { return p.acc; }),
+            marker: { size: 14, color: BLUE }, hovertemplate: clm.map(hover) });
+        lay["xaxis" + k] = axis({ domain: DOM[bi], anchor: ya, range: xr, title: "PFLOPs / question" });
+        lay["yaxis" + k] = axis({ anchor: xa, range: yr, title: bi === 0 ? "Accuracy (%)" : "" });
+        ann.push({ text: "<b>" + bench[1] + "</b>", xref: xa + " domain", yref: ya + " domain", x: 0.5, y: 1.04,
+                   xanchor: "center", yanchor: "bottom", showarrow: false, font: { size: 13 } });
       });
-
-      var unit = api ? "USD / question" : "PFLOPs / question";
-      var hover = function (p) {
-        return "<b>" + p.arm + "</b><br>accuracy " + p.acc.toFixed(1) + "%<br>cost " +
-          (api ? "$" + p.cost.toFixed(2) : p.cost.toFixed(2) + " PFLOPs") + " / question" +
-          (p.flag === "dagger" ? "<br>(list-price upper bound)" : "") + "<extra></extra>";
-      };
-      var base = pts.filter(function (p) { return p.arm !== "CLM"; }), clm = pts.filter(function (p) { return p.arm === "CLM"; });
-      var traces = [
-        { type: "scatter", mode: "lines", x: fr.map(function (p) { return p.cost; }), y: fr.map(function (p) { return p.acc; }),
-          line: { color: rgba(BLUE, 0.55), width: 1.5, dash: "dash" }, hoverinfo: "skip", name: "Pareto frontier" },
-        { type: "scatter", mode: "markers", x: base.map(function (p) { return p.cost; }), y: base.map(function (p) { return p.acc; }),
-          marker: { size: 11, color: "#fff", line: { color: "#333", width: 1.4 } }, name: "Baselines",
-          hovertemplate: base.map(hover) },
-        { type: "scatter", mode: "markers", x: clm.map(function (p) { return p.cost; }), y: clm.map(function (p) { return p.acc; }),
-          marker: { size: 15, color: BLUE }, name: "CLM", hovertemplate: clm.map(hover) }
-      ];
-      Plotly.react(plot, traces, layout({
-        margin: M, showlegend: false, annotations: ann,
-        xaxis: axis({ type: api ? "log" : "linear", range: xr, title: api ? "Billed cost (USD / question, log scale)" : "Prefix-reuse PFLOPs / question" }),
-        yaxis: axis({ range: yr, title: "Accuracy (%)" })
-      }), CONFIG);
+      lay.annotations = ann;
+      Plotly.react(plot, traces, lay, CONFIG);
     }
     draw();
     onResize(draw);
@@ -268,24 +268,21 @@
   CHARTS.edgebench = function (d, plot, controls) {
     var ARMS = ["Base", "Summary", "CLM", "CLMs (subagents)"];
     var COL = { "Base": "#666666", "Summary": PINK, "CLM": BLUE, "CLMs (subagents)": SKY };
-    var st = { model: "qwen", x: "h" };
-    seg(controls, "Model", [{ key: "qwen", label: "Qwen3.6-27B" }, { key: "sonnet", label: "Claude 4.6 Sonnet" }], st.model,
-        function (k) { st.model = k; if (k === "sonnet") { st.x = "h"; xs.set("h"); } draw(); });
-    var xs = seg(controls, "x-axis", [{ key: "h", label: "Wall-clock hours" }, { key: "pf", label: "Compute (PFLOPs)" }], st.x,
-                 function (k) { st.x = k; draw(); });
+    var st = { view: "qwen" };
+    seg(controls, null, [{ key: "qwen", label: "Qwen3.6-27B, 32K" }, { key: "sonnet", label: "Claude 4.6 Sonnet, 32K" },
+                         { key: "qwen128", label: "Qwen3.6-27B, 128K" }], st.view,
+        function (k) { st.view = k; draw(); });
     plot.style.height = "420px";
 
     function draw() {
-      xs.el.style.display = st.model === "qwen" ? "" : "none";
-      if (st.model !== "qwen") st.x = "h";
-      var D = d[st.model], traces = [], ends = [], ys = [];
+      var D = d[st.view], traces = [], ends = [], ys = [];
       ARMS.forEach(function (arm) {
-        var s = D[arm], col = COL[arm], x = st.x === "pf" ? s.pf : s.h, n = x.length;
+        var s = D[arm], col = COL[arm], x = s.h, n = x.length;
         ys = ys.concat(s.y);
-        var ex = arm === "Base" ? x[n - 1] : (st.x === "pf" ? x[n - 1] : 12);
+        var ex = arm === "Base" ? x[n - 1] : 12;
         var label = s.final.toFixed(1) + (s.pf_total != null ? " | " + s.pf_total + " PF" : "");
         traces.push({ type: "scatter", mode: "lines", x: x, y: s.y, name: arm, legendgroup: arm, line: { color: col, width: 3 },
-                      hovertemplate: "<b>" + arm + "</b><br>" + (st.x === "pf" ? "%{x:.0f} PFLOPs" : "%{x:.1f} h") + ": %{y:.1f}<extra></extra>" });
+                      hovertemplate: "<b>" + arm + "</b><br>%{x:.1f} h: %{y:.1f}<extra></extra>" });
         traces.push({ type: "scatter", mode: "markers", x: [ex], y: [s.final], legendgroup: arm, showlegend: false,
                       marker: { size: 10, color: col, line: { color: "#fff", width: 1.5 } },
                       hovertemplate: "<b>" + arm + "</b><br>final score " + s.final.toFixed(1) +
@@ -301,12 +298,11 @@
         return { x: e.x, y: e.ly, text: e.text, showarrow: false, xanchor: "left", xshift: 10, font: { size: 13, color: e.col } };
       });
       var b = ends.filter(function (e) { return e.arm === "Base"; })[0];
-      ann.push({ x: b.x, y: b.y, text: "Base: " + b.text + " (context overflows)", showarrow: false, xanchor: "left", yanchor: "bottom",
+      ann.push({ x: b.x, y: b.y, text: "Base: " + b.text, showarrow: false, xanchor: "left", yanchor: "bottom",
                  xshift: 6, yshift: 6, font: { size: 12, color: b.col } });
-      var xmax = st.x === "pf" ? Math.max.apply(null, ends.map(function (e) { return e.x; })) * 1.04 : 12.3;
       Plotly.react(plot, traces, layout({
         margin: { l: 64, r: 130, t: 12, b: 56 }, annotations: ann,
-        xaxis: axis({ range: [0, xmax], title: st.x === "pf" ? "Cumulative compute (prefix-reuse PFLOPs per run)" : "Wall-clock hours" }),
+        xaxis: axis({ range: [0, 12.3], title: "Wall-clock hours" }),
         yaxis: axis({ range: yr, title: "Best score so far (0–100)" })
       }), CONFIG);
     }
@@ -314,20 +310,17 @@
   };
 
   // ------------------------------------------------------------------ Software World (24+ hours)
-  CHARTS.software_world = function (d, plot, controls) {
+  CHARTS.software_world = function (d, plot) {
     var ARMS = [["Summary (agent swarm)", "#CF7B9B"], ["CLMs (agent swarm)", "#4C6FCB"]];
-    var st = { x: "h" };
-    seg(controls, "x-axis", [{ key: "h", label: "Active hours" }, { key: "usd", label: "Cumulative spend (USD)" }], st.x,
-        function (k) { st.x = k; draw(); });
     plot.style.height = "380px";
 
     function draw() {
       var traces = [], ann = [], xmax = 0;
       ARMS.forEach(function (a) {
-        var s = d[a[0]], x = s[st.x], n = x.length;
+        var s = d[a[0]], x = s.h, n = x.length;
         xmax = Math.max(xmax, x[n - 1]);
         traces.push({ type: "scatter", mode: "lines", x: x, y: s.y, name: a[0], line: { color: a[1], width: 3 },
-                      hovertemplate: "<b>" + a[0] + "</b><br>" + (st.x === "h" ? "%{x:.1f} active hours" : "$%{x:.0f}") + "<br>speedup %{y:.3f}×<extra></extra>" });
+                      hovertemplate: "<b>" + a[0] + "</b><br>%{x:.1f} active hours<br>speedup %{y:.3f}×<extra></extra>" });
         traces.push({ type: "scatter", mode: "markers", x: [x[n - 1]], y: [s.y[n - 1]], showlegend: false, hoverinfo: "skip",
                       marker: { size: 10, color: a[1], line: { color: "#fff", width: 1.5 } } });
         ann.push({ x: x[n - 1], y: s.y[n - 1], text: s.y[n - 1].toFixed(3) + "×", showarrow: false, xanchor: "left", xshift: 9,
@@ -335,7 +328,7 @@
       });
       Plotly.react(plot, traces, layout({
         margin: { l: 64, r: 70, t: 12, b: 56 }, annotations: ann,
-        xaxis: axis({ range: [0, xmax * 1.03], title: st.x === "h" ? "Active hours" : "Cumulative API spend (USD)" }),
+        xaxis: axis({ range: [0, xmax * 1.03], title: "Active hours" }),
         yaxis: axis({ range: [0.995, 1.05], tickformat: ".2f", ticksuffix: "×", title: "Speedup on held-out packages" })
       }), CONFIG);
     }
@@ -394,7 +387,7 @@
         traces = [
           { type: "bar", name: "full backup", x: cats, y: cats.map(function (c) { return K[c].full; }), marker: { color: [GREY, BLUE] },
             width: 0.5, hovertemplate: "%{x}: %{y:.0%} of edits had a full backup<extra></extra>",
-            text: cats.map(function (c) { return K[c].full ? (100 * K[c].full).toFixed(0) + "%" : "0 of 479 edits"; }),
+            text: cats.map(function (c) { return (100 * K[c].full).toFixed(0) + "%"; }),
             textposition: cats.map(function (c) { return K[c].full ? "inside" : "outside"; }), insidetextfont: { color: "#fff", size: 14 } },
           { type: "bar", name: "partial backup", x: cats, y: cats.map(function (c) { return K[c].partial; }), marker: { color: LIGHT },
             width: 0.5, hovertemplate: "%{x}: +%{y:.0%} partial backup<extra></extra>",
@@ -467,8 +460,8 @@
     var STY = {
       "CLM, with efficiency advantage": { col: BLUE, dash: "solid", sym: "circle" },
       "CLM, task reward only": { col: BLUE, dash: "dash", sym: "square" },
-      "Summary, with efficiency advantage": { col: "#D9577A", dash: "solid", sym: "circle" },
-      "Summary, task reward only": { col: "#D9577A", dash: "dash", sym: "square" }
+      "Summary, with efficiency advantage": { col: PINK, dash: "solid", sym: "circle" },
+      "Summary, task reward only": { col: PINK, dash: "dash", sym: "square" }
     };
     var st = { v: "steps" };
     seg(controls, "View", [{ key: "steps", label: "Over training steps" }, { key: "pareto", label: "Accuracy vs. compute" }], st.v,

@@ -87,13 +87,15 @@ def contextbench():
 
 # --------------------------------------------------------------------------------------------
 def pareto():
-    """fig:pareto_27b and appendix pareto_open/pareto_api -- visualization/pareto.py on data/main_table.csv."""
+    """fig:pareto_27b and appendix fig:pareto_9b_27b -- visualization/pareto.py on data/main_table.csv,
+    restricted to the two models in the paper (Qwen3.5-9B, Qwen3.6-27B)."""
     src = rows(os.path.join(PAPER, "visualization", "data", "main_table.csv"))
     keep = {"Base", "Summary", "MEM1", "RLM", "Self-Compact", "ACM", "CLM"}
+    models = {"Qwen3.5-9B", "Qwen3.6-27B"}
     out = {}
     for x in src:
         arm = "Summary" if x["arm"] == "Codex Summary" else x["arm"]
-        if arm not in keep or x["bench"] not in ("BCP", "TB2.1", "TBLite"):
+        if arm not in keep or x["model"] not in models or x["bench"] not in ("BCP", "TB2.1", "TBLite"):
             continue
         acc, cost = num(x["acc"]), num(x["cost"])
         if acc is None or cost is None:
@@ -189,10 +191,12 @@ def open_problems():
 
 # --------------------------------------------------------------------------------------------
 def edgebench():
-    """fig:long_horizon (a) and (c) -- visualization/long_horizon.py draw(v2_32k_unit_curve_oe_main.csv, 'd10v2')
-    and long_horizon_sonnet_panel.py (family d10s46)."""
+    """fig:long_horizon (a) -- visualization/long_horizon.py draw() for the 32K run (family d10v2) and the
+    appendix 128K run (fig:long_horizon_128k_r50, family d10v2r50-128k), plus long_horizon_sonnet_panel.py
+    (family d10s46)."""
     D = os.path.join(EXP, "long_horizon")
     arms = [("r-base", "Base"), ("r-codex", "Summary"), ("p0t1", "CLM"), ("live_ctx_ma", "CLMs (subagents)")]
+    R50 = "d10v2r50-128k"
 
     def curves(path, family):
         u = pd.read_csv(path, comment="#")
@@ -200,32 +204,35 @@ def edgebench():
         return u.groupby(["arm", "mark_h"]).agg(mean=("best_so_far", "mean"),
                                                 alive=("alive_at_mark", "sum")).reset_index()
 
-    g = curves(os.path.join(D, "v2_32k_unit_curve_oe_main.csv"), "d10v2")
     fin = pd.read_csv(os.path.join(D, "v2_final_merged_arm.csv"), comment="#")
-    fin = fin[fin.family == "d10v2"].set_index("arm").merged_12h
-    cost = pd.read_csv(os.path.join(D, "v2_cost.csv"))
+    cost = pd.concat([pd.read_csv(os.path.join(D, "v2_cost.csv")),
+                      pd.read_csv(os.path.join(D, "v2_128k_r50_rebank_cost.csv"), comment="#").query("family == @R50")],
+                     ignore_index=True)
     sub = pd.read_csv(os.path.join(D, "v2_cost_subagents.csv"), comment="#")
-    pf = cost[cost.family == "d10v2"].groupby("arm").pflops_cache_aware.mean().add(
-        sub[sub.family == "d10v2"].groupby("arm").subagent_pflops_cache_aware_scaled.mean(), fill_value=0.0)
-    cc = pd.read_csv(os.path.join(D, "v2_cost_curve_uor.csv"))
-    cc = cc[cc.family == "d10v2"].groupby(["arm", "mark_h"]).cum_pflops_cache_aware.mean().reset_index()
-    subc = pd.read_csv(os.path.join(D, "v2_cost_subagents_curve.csv"), comment="#")
-    sc = subc[subc.family == "d10v2"].groupby(["arm", "mark_h"]).cum_subagent_pflops_cache_aware_scaled.mean().reset_index()
-    cc = cc.merge(sc, on=["arm", "mark_h"], how="left").fillna({"cum_subagent_pflops_cache_aware_scaled": 0.0})
-    cc["pf"] = cc.cum_pflops_cache_aware + cc.cum_subagent_pflops_cache_aware_scaled
+    sub = pd.concat([sub[sub.family != R50],
+                     pd.read_csv(os.path.join(D, "v2_128k_r50_rebank_subagents.csv"), comment="#").query("family == @R50")],
+                    ignore_index=True)
 
-    qwen = {}
-    for arm, label in arms:
-        dd = g[g.arm == arm].sort_values("mark_h")
-        x_pf = cc[cc.arm == arm].set_index("mark_h").reindex(dd.mark_h).pf.values
-        if arm == "r-base":
-            stop = dd[dd.alive == dd.alive.min()].mark_h.iloc[0]
-            dd, x_pf = dd[dd.mark_h <= stop], x_pf[:len(dd[dd.mark_h <= stop])]
-            final = float(dd["mean"].iloc[-1])
-        else:
-            final = float(fin.get(arm, dd["mean"].iloc[-1]))
-        qwen[label] = {"h": [r(v, 3) for v in dd.mark_h], "y": [r(v, 3) for v in dd["mean"]],
-                       "pf": [r(v, 2) for v in x_pf], "final": r(final, 1), "pf_total": r(pf[arm], 0)}
+    def qwen_view(csv_name, family):
+        g = curves(os.path.join(D, csv_name), family)
+        f = fin[fin.family == family].set_index("arm").merged_12h
+        pf = cost[cost.family == family].groupby("arm").pflops_cache_aware.mean().add(
+            sub[sub.family == family].groupby("arm").subagent_pflops_cache_aware_scaled.mean(), fill_value=0.0)
+        out = {}
+        for arm, label in arms:
+            dd = g[g.arm == arm].sort_values("mark_h")
+            if arm == "r-base":
+                # as in the paper's Base inset: labelled with its last value, drawn up to where its last trial stopped
+                final = float(dd["mean"].iloc[-1])
+                dd = dd[dd.mark_h <= dd[dd.alive == dd.alive.min()].mark_h.iloc[0]]
+            else:
+                final = float(f[arm])
+            out[label] = {"h": [r(v, 3) for v in dd.mark_h], "y": [r(v, 3) for v in dd["mean"]],
+                          "final": r(final, 1), "pf_total": r(pf[arm], 0)}
+        return out
+
+    qwen = qwen_view("v2_32k_unit_curve_oe_main.csv", "d10v2")
+    qwen128 = qwen_view("v2_128k_r50_rebank_unit_curve_uor.csv", R50)
 
     gs = curves(os.path.join(D, "v2_32k_sonnet_oe_unit_curve.csv"), "d10s46")
     sonnet = {}
@@ -238,11 +245,11 @@ def edgebench():
         dd = dd[dd.mark_h <= stop]
         sonnet[label] = {"h": [r(v, 3) for v in dd.mark_h], "y": [r(v, 3) for v in dd["mean"]],
                          "final": r(float(dd["mean"].iloc[-1]), 1)}
-    write("edgebench", {"qwen": qwen, "sonnet": sonnet})
+    write("edgebench", {"qwen": qwen, "sonnet": sonnet, "qwen128": qwen128})
 
 
 def software_world():
-    """fig:long_horizon (b) and appendix fig:software_world_long_wakes -- visualization/software_world.py."""
+    """fig:long_horizon (b), right panel -- visualization/long_horizon.py sw_series() (speedup vs active hours)."""
     src = rows(os.path.join(EXP, "software_world", "exp23_sweeps.csv"))
     arms = [("23.2v2", "Summary (agent swarm)"), ("23.3v2", "CLMs (agent swarm)")]
     ser = {c: [x for x in src if x["cell"] == c] for c, _ in arms}
@@ -251,7 +258,6 @@ def software_world():
     for c, label in arms:
         rs = [x for x in ser[c] if float(x["active_hours"]) <= cut + 1e-9]
         out[label] = {"h": [r(float(x["active_hours"]), 2) for x in rs],
-                      "usd": [r(float(x["usd_pi_calls"]), 1) for x in rs],
                       "y": [r(float(x["geomean_raw"]), 4) for x in rs]}
     write("software_world", out)
 
@@ -360,9 +366,10 @@ def selfevo():
 
 # --------------------------------------------------------------------------------------------
 def rl():
-    """fig:rl_results -- the 4-arm x step trace behind figures/RL/eff_combined_830_s80.pdf
-    (code repo rl/eff_combined/rl_eff_combined_traced.csv)."""
-    src = list(csv.DictReader(io.StringIO(branch_file("paper/experiments/rl/eff_combined/rl_eff_combined_traced.csv"))))
+    """fig:rl_curves -- visualization/rl_curves.py: the 4-arm x step trace (code repo
+    rl/eff_combined/rl_eff_combined_traced.csv), through training step 70."""
+    src = [x for x in csv.DictReader(io.StringIO(branch_file("paper/experiments/rl/eff_combined/rl_eff_combined_traced.csv")))
+           if int(x["step"]) <= 70]
     names = {"ours_eff": "CLM, with efficiency advantage", "ours_noeff": "CLM, task reward only",
              "sum_eff": "Summary, with efficiency advantage", "sum_noeff": "Summary, task reward only"}
     out = {}
