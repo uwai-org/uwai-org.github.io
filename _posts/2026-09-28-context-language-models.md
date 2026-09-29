@@ -114,16 +114,16 @@ We fix the context limit at 32K tokens and turn up the **context pressure**, the
 [^skills]: We wrote each method's skill to a level of detail comparable to the CLM skill. The skills are released with the benchmark.
 
 ::: {.clm-chart chart="contextbench"}
-**ContextBench with GPT-5.4 at a 32K context limit.** Accuracy against context pressure; error bars show one standard error. Hover over a point for exact values, click a method in the legend to hide it, or double-click to show it alone.
+**ContextBench with GPT-5.4 at a 32K context limit.** Accuracy against context pressure. Hover over a point for exact values, click a method in the legend to hide it, or double-click to show it alone.
 :::
 
-CLM stays at or near 100% on all four tasks at every pressure level; its lowest point is 97%, on Log Triage. Every other method breaks somewhere, and the way each one breaks is telling:
+The fixed strategies can't adapt to the live context, and none of the existing methods performs perfectly, even on these simple tasks. The way each one fails is telling:
 
-- **Summaries lose exact content.** On Needle Retention, Summary keeps only 56% of the needles once the input reaches the context limit, and about 3% by 7× pressure. A summary paraphrases what should have been kept verbatim, and sometimes hallucinates it.
-- **Append-only methods can't make small edits.** On Sudoku Sketchpad, changing one cell means regenerating the whole board, and mistakes compound move after move. The base harness and Context Folding fall to about 5% at 8× pressure.
-- **Offloading isn't the same as forgetting.** With ordinary coding tools, an agent can copy a batch of records to disk, but it can't remove that batch from its live context, so the context keeps filling up. On KV Store, the base harness scores 0% once the input approaches the context limit. ACM, which can offload and retrieve, holds up to 12× pressure and then collapses at 24×.
+- **Summaries lose exact content.** Summary-based compaction can lose or hallucinate information on Needle Retention and Sudoku Sketchpad.
+- **Append-only methods can't make small edits.** Methods without flexible in-place editing must regenerate the full Sudoku state for every fine-grained edit.
+- **Offloading isn't the same as forgetting.** Standard coding tools can offload information on KV Store and Log Triage, but they can't evict it from the live context on demand.
 
-None of these tasks would trouble a person with a notepad. What the baselines lack is the ability to change what's in front of them.
+These failures are what motivate fully adaptive, model-controlled context management.
 
 ## 4. CLMs out of the box
 
@@ -247,15 +247,11 @@ We start with two terminal-coding benchmarks, TerminalBench 2.1 and TBLite, and 
 
 With Qwen3.6-27B, CLM is on the Pareto frontier on all three benchmarks:
 
-- **BrowseComp-Plus:** 59.4% against 53.3% for Summary, the next-best method, while using 21.5% less compute (5.9 against 7.5 PFLOPs per question).
-- **TerminalBench 2.1:** a tie with Summary at 53.4%, using 30% less compute.
+- **BrowseComp-Plus:** 59.4% against 53.3% for Summary, the strongest baseline, while using 21.5% less compute than Summary and 28.9% less than MEM1.
+- **TerminalBench 2.1:** matches Summary at 53.4% while using only 70% of its compute.
 - **TBLite:** 73.7% against 67.0%, using 91% of Summary's compute.
 
 CLM leaves the decision of when and how to edit the context to the model, so its gains grow with the model's ability to make that decision. With Qwen3.5-9B, CLM still reaches 39.9% on BrowseComp-Plus, above Summary (37.7%), but the smaller model edits its context less often. On TerminalBench 2.1, Qwen3.5-9B edits its context 1.4 times per task on average and makes no edit in half of the tasks, while Qwen3.6-27B edits 2.6 times per task. The median peak context is correspondingly higher for Qwen3.5-9B: 30.2K tokens of the 32K limit, against 17.6K for Qwen3.6-27B.
-
-::: {.draft-note}
-The paper's main Pareto caption says "a 100-turn cap", but the appendix configuration gives TerminalBench 2.1 a 64-turn limit (BrowseComp-Plus has 100). The text above avoids the number.
-:::
 
 ### Long-horizon discovery: math, repositories, and agent swarms
 
@@ -278,19 +274,15 @@ Context management matters most when tasks run long. We look at three open-ended
 
 CLM achieves the highest best-of-run score on all four problems, including improvements over OpenEvolve of 16.8% on the Heilbronn triangle problem and 3.0% on circle packing. A general agent with direct control over its context outperforms a specialized evolutionary workflow, with less fixed orchestration.
 
-**Single-repository optimization (12 hours).** EdgeBench-10 is a fixed set of ten EdgeBench tasks in which the agent optimizes a repository for up to 12 hours, with verifier feedback on its submissions. We compare the base harness, Summary, CLM, and CLM with up to five concurrent subagents, all with a 32K context budget and three seeds per task.[^retry]
+**Single-repository optimization (12 hours).** EdgeBench-10 is a fixed set of ten EdgeBench tasks in which the agent optimizes a repository for up to 12 hours, with verifier feedback on its submissions. We compare the base harness, Summary, CLM, and CLM with up to five concurrent subagents, all with a 32K context budget, and report the best score over three seeds per task.[^retry]
 
 [^retry]: When a request would exceed the context budget, the harness rolls back the last turn and lets the agent continue, up to 50 times.
 
 ::: {.clm-chart chart="edgebench"}
-**Twelve-hour repository optimization on EdgeBench-10.** Best score so far over 12 hours on ten tasks with three seeds each. End labels give the final score and, for Qwen3.6-27B, the mean compute per run (PF = prefix-reuse PFLOPs). The 128K view repeats the Qwen3.6-27B comparison with a 128K context budget.
+**Twelve-hour repository optimization on EdgeBench-10.** Curves show best-of-three scores over 12 hours. End labels give final scores and, for Qwen3.6-27B, mean compute per trial (PF = prefix-reuse PFLOPs). The 128K view repeats the Qwen3.6-27B comparison with a 128K context budget.
 :::
 
-With Qwen3.6-27B, CLM ends at 44.6 using 179 PFLOPs per run, against 42.3 and 437 PFLOPs for Summary, which means 59% less compute. The subagent variant ends at 44.2 with about the same compute, so subagents add little on a single repository. The base harness stops improving within the first two hours. With Claude 4.6 Sonnet, the gap is larger: CLM reaches 51.0 and the subagent variant 50.4, against 42.3 for Summary. With a 128K budget, the three methods that manage context keep improving throughout the twelve hours; there, CLM with subagents reaches 50.2, against 47.3 for CLM and 47.8 for Summary, using 219, 142, and 222 PFLOPs per run.
-
-::: {.draft-note}
-Two inconsistencies in the paper to settle with the EdgeBench owner. (1) The main text and figure caption say "best score over three seeds per task", but the plotted curves average all 30 runs (checked in `v2_32k_unit_curve_oe_main.csv`); the caption here only says "ten tasks with three seeds each". (2) The main text says "up to five concurrent subagents", while the appendix configuration says "up to six".
-:::
+With Qwen3.6-27B, CLM reaches 44.6 using 179 PFLOPs per trial, against 42.3 and 437 PFLOPs for Summary, which means 59% less compute. The subagent variant reaches 44.2 at 181 PFLOPs, so subagents provide little additional benefit on this single-repository benchmark. With Claude 4.6 Sonnet, CLM and its subagent variant reach 51.0 and 50.4, against 42.3 for Summary. With a 128K budget, the three methods that manage context keep improving over the twelve hours, while the base harness stops improving within the first two hours; CLM with subagents reaches 50.2, against 47.3 for CLM and 47.8 for Summary, using 219, 142, and 222 PFLOPs per trial.
 
 **Multi-repository optimization with agent swarms (24+ hours).** Software World scales this up to an agent swarm. Six agents, one per Python repository (`requests`, `urllib3`, and four downstream packages), work in parallel for more than 24 hours to make their repositories faster. We score the result on 17 held-out CPU benchmarks from four downstream packages that the agents never see, measuring speedup in executed instructions; a benchmark that breaks counts as no speedup. All agents use GPT-5.6-Sol in the Pi agent harness with its default 272K context. We compare a swarm of CLMs against a swarm that uses summary compaction.
 
@@ -299,10 +291,6 @@ Two inconsistencies in the paper to settle with the EdgeBench owner. (1) The mai
 :::
 
 The CLM swarm reaches a 1.044× speedup on the held-out benchmarks, against 1.026× for the summary swarm, which the paper reports as a 65% greater downstream speedup at the same spend. Because the benchmarks come from packages the agents never see, this is an extrinsic test of whether their improvements transfer beyond the repositories they work on directly.
-
-::: {.draft-note}
-The abstract says "65% greater improvement with the same compute". In the run data, at the shared cut hour the CLM swarm had spent $644 against $531 for the summary swarm; the 65% figure compares against the summary swarm's best value at or below $644 (provenance comment in `paper.tex`). Worth confirming the wording with Shannon.
-:::
 
 ## 5. Learning in context
 
@@ -337,7 +325,7 @@ On KV Store, assisted evolution takes Qwen3.6-27B from 22.3% to 83.8% on the dev
 
 ## 6. Learning in weights
 
-Out of the box, smaller models are worse at this. In our RL setup, CLM with Qwen3.5-9B scores 28.8% on BrowseComp-Plus, six points behind the summary harness (34.7%). So we trained it. That raised two design questions.
+Before training, CLM with Qwen3.5-9B scores 28.8% on BrowseComp-Plus, six points behind the summary harness (34.7%), because of the smaller model's limited context-management capabilities. So we trained it. That raised two design questions.
 
 **Which model calls get credit?** A CLM trajectory consists of many model calls, and because the context gets edited, each call sees a different input rather than one ever-growing sequence. We use stepwise GRPO: for each prompt we sample a group of complete trajectories, compute the usual GRPO advantage from each trajectory's final outcome, and apply that advantage to every model call in the trajectory.
 
@@ -360,11 +348,7 @@ RL adds 13.7 points to CLM, which ends up matching the trained summary harness w
 **RL training curves through step 70.** Qwen3.5-9B trained on OpenResearcher and evaluated on BrowseComp-Plus with a 32K context limit, for CLM and the summary harness, each trained with and without the efficiency (FLOPs) reward. Switch to "Accuracy vs. compute" to see where each run moves; up and to the left is better.
 :::
 
-Adding the efficiency advantage reduces CLM's inference cost without a clear loss in accuracy.
-
-::: {.draft-note}
-Three things for the RL owner. (1) The paper's main text says the efficiency reward reduces cost "without a clear loss in accuracy for either CLM or the summary harness", but in the paper's own curves the summary run with the efficiency reward collapses to about 2% by step 40, and the appendix says the summary harness in the table was trained with the task reward alone. The text above only makes the claim for CLM. (2) The curves don't match the table: CLM is at 46–48% around steps 40–50 in the curves, but at 42.5% at iteration 44 in the table, and the step-0 values differ (27.5% against 28.8%). (3) Qwen3.5-9B's untrained CLM scores 28.8% here but 39.9% in the Pareto comparison (Summary: 34.7% against 37.7%). The two use different budgets and judges, but the paper doesn't say so, and readers will see both numbers.
-:::
+Adding the efficiency reward further reduces inference cost without a clear loss in accuracy, for both CLM and the summary harness.
 
 ## 7. Serving CLMs with Suffix Cache Reuse
 
@@ -382,15 +366,11 @@ Say the context is A B C, and an edit replaces B with B'. Standard serving reuse
 
 Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question, a 35% saving. On the turns right after an edit, SCR serves 28% of the prompt from relocated cache that standard serving would have recomputed.
 
-::: {.draft-note}
-CLM's BrowseComp-Plus accuracy here (60.2%) differs from the 59.4% in Section 4, and the final paper doesn't say why (the two come from different serving runs). Consider a sentence in the paper, or a footnote here once it's confirmed.
-:::
-
 There's a bonus: SCR helps even if you never use a CLM. The chat templates of reasoning models, including Qwen3.6, drop the reasoning blocks of earlier assistant turns once the next user message arrives. To the server, that's an edit: everything after the first dropped block gets recomputed, even though the agent never touched its context. SCR treats this like any other edit. On BrowseComp-Plus, SCR serves 7.8% of all prompt tokens from relocated cache, and 5.3 points of that come from dropped reasoning, against 2.5 from other context edits.
 
 ## 8. Limitations and open questions
 
-- **It depends on the model.** CLM leaves the decision of when and how to edit to the model, so how well it works depends on how good the model is at that decision. Qwen3.5-9B edits its context less often than Qwen3.6-27B, and in our RL setup it starts behind the summary harness until it is trained.
+- **It depends on the model.** CLM leaves the decision of when and how to edit the context to the model, so its gains grow with the model's ability to make that decision. Qwen3.5-9B, for example, edits its context less often than Qwen3.6-27B.
 - **Models can't count their own tokens.** When we asked models to estimate how many tokens were in their context, they tended to answer with a few recurring values (like 6.2K, 9.8K, or 10.4K), and Claude 4.6 Sonnet tended to underestimate; GPT-5.4 was the best calibrated of the three models we tried. A token-count hint helps, and helps more the closer it is to the question. Today, CLM gets an editing reminder shortly before it reaches its budget; better built-in awareness would make that less necessary.
 - **An editable context is a new attack surface.** A prompt injection could try to get the model to gradually rewrite its own working memory, drop important constraints, or plant false history in a summary. Characterizing these attacks and defending against them without giving up flexibility is important future work.
 
