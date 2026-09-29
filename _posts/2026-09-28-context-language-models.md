@@ -117,7 +117,7 @@ We fix the context limit at 32K tokens and turn up the **context pressure**, the
 **ContextBench with GPT-5.4 at a 32K context limit.** Accuracy against context pressure. Hover over a point for exact values, click a method in the legend to hide it, or double-click to show it alone.
 :::
 
-The fixed strategies can't adapt to the live context, and none of the existing methods performs perfectly, even on these simple tasks. The way each one fails is telling:
+The fixed strategies can't adapt to the live context, and none of the existing methods performs perfectly, even on these simple tasks. Each fails in a different way:
 
 - **Summaries lose exact content.** Summary-based compaction can lose or hallucinate information on Needle Retention and Sudoku Sketchpad.
 - **Append-only methods can't make small edits.** Methods without flexible in-place editing must regenerate the full Sudoku state for every fine-grained edit.
@@ -131,27 +131,23 @@ Everything in this section uses existing models without any training; the only t
 
 ### Emergent context-management behaviors
 
-Before getting to numbers, it's worth looking at what models actually do once they can edit their own context. Some of what we see is new, and some of it reproduces effective compaction behaviors familiar from existing harnesses. Each tab shows a real edit command from our runs, shortened (`...` marks cut text).
+Here is what models actually do once they can edit their own context. Some of these behaviors are new; others reproduce effective compaction behaviors familiar from existing harnesses.
 
-:::: {.clm-tabs}
+:::: {.clm-tabs .clm-examples}
 ::: {.tab tab="Subagent scoreboard"}
 To orchestrate and monitor subagents, the CLM builds scoreboards and trackers inside its context and keeps them current with in-place edits. In one run it updated agent status through 163 in-place edits while keeping its context at only 6–8K tokens.
 
-```python
-open(p, "w").write("""[[CTX_TURN 1 role=assistant]]
+<pre class="clm-edit"><code><span class="sc">open(p, "w").write("""[[CTX_TURN 1 role=assistant]]</span>
 ## STATE — Erdős Minimum Overlap Problem (compact)
-LEDGER TOP: 0.9992491 ...
-AGENTS: 21 launched, 5 currently running ...
-KEY FILES: /workspace/subctx_4/h_best_final.npy ...
-FINDINGS: All methods plateau at 0.381157 ...""")
-```
+<span class="hl">LEDGER TOP:</span> 0.9992491 ...
+<span class="hl">AGENTS:</span> 21 launched, 5 currently running ...
+<span class="hl">KEY FILES:</span> /workspace/subctx_4/h_best_final.npy ...
+<span class="hl">FINDINGS:</span> All methods plateau at 0.381157 ...<span class="sc">""")</span></code></pre>
 
-```python
-new = """## ORCHESTRATOR STATE (compact)
-Budget: 7/100 used. All 5 slots BUSY (subctx_0..4 ...
-Dead ends: simple grid(0.822), hexagonal(0.9977) ...
-Next: score my own candidates while workers run ..."""
-```
+<pre class="clm-edit"><code><span class="sc">new = """</span><span class="hl">## ORCHESTRATOR STATE (compact)</span>
+<span class="hl">Budget:</span> 7/100 used. All 5 slots BUSY (subctx_0..4 ...
+<span class="hl">Dead ends:</span> simple grid(0.822), hexagonal(0.9977) ...
+<span class="hl">Next:</span> score my own candidates while workers run ...<span class="sc">"""</span></code></pre>
 
 [Erdős minimum overlap, step 455; circle packing, steps 194 and 198]{.tab-source}
 :::
@@ -159,11 +155,9 @@ Next: score my own candidates while workers run ..."""
 ::: {.tab tab="A new role for notes"}
 When rewriting old turns, the CLM created a new role alongside the chat template's roles, `notes`, to mark information it wrote for its own internal use.
 
-```python
-re.sub(r"\[\[CTX_TURN 4 .*?(?=\[\[CTX_TURN 16)",
-       """[[CTX_TURN 4 role=notes]]
-STATUS: ... James Gallagher (docid=58939) ...""")
-```
+<pre class="clm-edit"><code><span class="sc">re.sub(r"</span><span class="rm">\[\[CTX_TURN 4 .*?(?=\[\[CTX_TURN 16)</span><span class="sc">",</span>
+<span class="sc">       """[[CTX_TURN 4 </span><span class="hl">role=notes</span><span class="sc">]]</span>
+STATUS: ... James Gallagher (docid=58939) ...<span class="sc">""")</span></code></pre>
 
 [BrowseComp-Plus, step 40]{.tab-source}
 :::
@@ -171,23 +165,17 @@ STATUS: ... James Gallagher (docid=58939) ...""")
 ::: {.tab tab="Loops that prune results"}
 The CLM writes loops over its own turns: here it replaces past searches that found nothing with a one-line marker, and in another run it compacts overly long tool outputs into short references.
 
-```python
-for t in turns[1:]:
-    ...
-    result += f'\n[[CTX_TURN search]]\nSearched: {m.group(1).strip()}. No relevant results.\n'
-```
+<pre class="clm-edit"><code><span class="hl">for t in turns[1:]:</span> <span class="sc">...</span>
+<span class="sc">    result += f'\n[[CTX_TURN search]]\n</span><span class="hl">Searched: {m.group(1).strip()}.</span> <span class="hl">No relevant results.</span><span class="sc">\n'</span></code></pre>
 
-```python
-while i < len(lines):
-    ...
-    if len(body) > 500:
-        if 'bcp_search' in body:
-            result.append(f"[Searched: {query}]")
-        elif 'bcp_get_document' in body:
-            result.append(f"[Retrieved doc {docid}]")
-    else:
-        result.extend(body_lines)
-```
+<pre class="clm-edit"><code><span class="hl">while i &lt; len(lines):</span> <span class="sc">...</span>
+<span class="sc">    if </span><span class="hl">len(body) &gt; 500</span><span class="sc">: ...</span>
+<span class="sc">        if </span>'bcp_search' in body<span class="sc">: ...</span>
+<span class="sc">            result.append(f"</span><span class="hl">[Searched: {query}]</span><span class="sc">")</span>
+<span class="sc">        elif </span>'bcp_get_document' in body<span class="sc">: ...</span>
+<span class="sc">            result.append(f"</span><span class="hl">[Retrieved doc {docid}]</span><span class="sc">")</span>
+<span class="sc">    else:</span>
+<span class="sc">        result.extend(body_lines)</span></code></pre>
 
 [BrowseComp-Plus, steps 1509 and 13]{.tab-source}
 :::
@@ -195,16 +183,13 @@ while i < len(lines):
 ::: {.tab tab="A reusable helper"}
 The CLM defines its own compaction function, which keeps a progress note and replaces old search results with a pointer to that note. It invoked `compact_turns` 37 times in one run.
 
-```python
-progress = """[Search progress: VERIFIED ... NEXT: ...]"""
-s = re.sub(..., progress, s)
+<pre class="clm-edit"><code><span class="sc">progress = """</span>[Search progress: VERIFIED ... NEXT: ...]<span class="sc">"""</span>
+<span class="sc">s = re.sub(..., </span><span class="hl">progress</span><span class="sc">, s)</span>
 
-def compact_turns(text):
-    return re.sub(..., lambda m: m.group(0).split('\n')[0]
-                  + '\n[search results - see progress note]', text)
-
-s = compact_turns(s)
-```
+<span class="hl">def compact_turns(text):</span>
+<span class="sc">    return re.sub(..., lambda m: </span>m.group(0).split('\n')[0]
+<span class="sc">        + '\n</span><span class="hl">[search results - see progress note]</span><span class="sc">', text)</span>
+<span class="hl">s = compact_turns(s)</span></code></pre>
 
 [BrowseComp-Plus, step 109]{.tab-source}
 :::
@@ -212,26 +197,29 @@ s = compact_turns(s)
 ::: {.tab tab="Summaries that keep what matters"}
 The CLM also reproduces effective behaviors from existing baselines. It compresses 21K tokens into a summary that keeps the facts needed for the answer, and it summarizes finished experiments while keeping a list of untried ideas for later.
 
-```python
-re.sub(r"\[\[CTX_TURN 2.*",
-       "[SUMMARY: ... Kader Asmal Excellence Award launched 2011 by Mrs A Motshekga ...]")
-```
+<pre class="clm-edit"><code><span class="sc">re.sub(r"</span><span class="rm">\[\[CTX_TURN 2.*</span><span class="sc">",</span>
+<span class="sc">  "</span>[SUMMARY: ... <span class="hl">Kader Asmal Excellence Award</span>
+   <span class="hl">launched 2011 by Mrs A Motshekga</span> ...]<span class="sc">")</span></code></pre>
 
-```python
-new = """[EXPLORATION LEDGER - 86 scored attempts ...
+<pre class="clm-edit"><code><span class="sc">new = """</span>[EXPLORATION LEDGER - <span class="hl">86 scored attempts</span> ...
 Best score: 0.9931 (sum_radii=2.6177) from ...
-UNTRIED IDEAS (priority order):
-1. Gradient clipping norm=1.0 with 12k steps
-2. Try lam=2200+uniform(0,2800) with 12k steps ..."""
-```
+<span class="hl">UNTRIED IDEAS (priority order):</span>
+<span class="hl">1.</span> Gradient clipping norm=1.0 with 12k steps
+<span class="hl">2.</span> Try lam=2200+uniform(0,2800) with 12k steps ...<span class="sc">"""</span></code></pre>
 
 [BrowseComp-Plus, step 20; circle packing, step 332]{.tab-source}
 :::
+
+::: {.edit-legend}
+[new text the CLM writes into its context]{.hl} [context the edit deletes]{.rm} [code around the edit]{.sc}
+:::
+
+**Qualitative examples of CLM context-management behaviors.** Each tab shows a real edit command from our runs, shortened where marked with `...`. The highlighted span is what each example is about, usually the new text the CLM writes into its next context.
 ::::
 
 ### Measuring cost when the context changes
 
-Editing the context isn't free, and it's worth being precise about why. Model servers such as vLLM and SGLang cache the internal (key-value) states of each request and reuse them when the next request starts with the same tokens. An agent that only appends gets almost its whole history from this cache. Once the agent edits something in the middle of its context, though, every token after the edit has to be processed again, even the text that didn't change.
+Model servers such as vLLM and SGLang cache the internal (key-value) states of each request and reuse them when the next request starts with the same tokens. An agent that only appends gets almost its whole history from this cache. Once the agent edits something in the middle of its context, though, every token after the edit has to be processed again, even the text that didn't change.
 
 So we measure cost in **prefix-reuse FLOPs**: the FLOPs to process every prompt token from the first mismatch with the cached prefix onward, plus the FLOPs to generate new tokens. This charges CLMs for every edit they make.[^flops] All the accuracy-versus-cost plots below use this metric.
 
@@ -241,7 +229,7 @@ So we measure cost in **prefix-reuse FLOPs**: the FLOPs to process every prompt 
 
 We start with two terminal-coding benchmarks, TerminalBench 2.1 and TBLite, and the deep-research benchmark BrowseComp-Plus. Every method runs on the same Mini-SWE-Agent backbone with a 32K context limit, and all are evaluated out of the box. Besides the base harness and Summary, we compare against MEM1, Self-Compact, ACM, and RLM.
 
-::: {.clm-chart .wide .extra-wide chart="pareto"}
+::: {.clm-chart chart="pareto"}
 **Accuracy against inference cost on coding and deep research, at a 32K context limit.** Each point is one context-management method, and the dashed line marks the Pareto frontier. Cost is prefix-reuse PFLOPs per question. Use the buttons to switch between Qwen3.6-27B and the smaller Qwen3.5-9B.
 :::
 
@@ -294,7 +282,7 @@ The CLM swarm reaches a 1.044× speedup on the held-out benchmarks, against 1.02
 
 ## 5. Learning in context
 
-Once context management is something the model does, rather than something the harness does to the model, it can be taught like any other behavior. The simplest way is to ask.
+CLMs make context management an intrinsic model behavior, so it can be learned like any other skill. The simplest way to change it is to tell the model what you want.
 
 ### Steering with a single sentence
 
@@ -310,7 +298,7 @@ We ran Claude 4.6 Sonnet as a CLM on BrowseComp-Plus and appended a single sente
 
 ### Evolving a context-management skill
 
-Asking works when you already know what you want. When you don't, the model can search for a good strategy itself. We write the strategy down as an in-context skill document and optimize it with a standard prompt-evolution loop:[^gepa] the agent produces rollouts on a training split, a proposer model uses the traces to write candidate skills, and the candidates are scored on a development split to decide what to keep. Once the search is frozen, we evaluate the selected skill once on a held-out test split. We run two settings on ContextBench at a 32K limit:
+CLMs can also improve their context-management strategy through textual evolution. We write the strategy down as an in-context skill document and optimize it with a standard prompt-evolution loop:[^gepa] the agent produces rollouts on a training split, a proposer model uses the traces to write candidate skills, and the candidates are scored on a development split to decide what to keep. Once the search is frozen, we evaluate the selected skill once on a held-out test split. We run two settings on ContextBench at a 32K limit:
 
 - **Assisted evolution:** Qwen3.6-27B is the agent and starts with no context-management instruction; Claude Fable 5.1 proposes skills.
 - **Self-evolution:** Opus 5 is both the agent and the proposer.
@@ -366,17 +354,17 @@ Say the context is A B C, and an edit replaces B with B'. Standard serving reuse
 
 Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question, a 35% saving. On the turns right after an edit, SCR serves 28% of the prompt from relocated cache that standard serving would have recomputed.
 
-There's a bonus: SCR helps even if you never use a CLM. The chat templates of reasoning models, including Qwen3.6, drop the reasoning blocks of earlier assistant turns once the next user message arrives. To the server, that's an edit: everything after the first dropped block gets recomputed, even though the agent never touched its context. SCR treats this like any other edit. On BrowseComp-Plus, SCR serves 7.8% of all prompt tokens from relocated cache, and 5.3 points of that come from dropped reasoning, against 2.5 from other context edits.
+SCR is not limited to CLMs. The chat templates of many reasoning models drop the reasoning blocks of earlier assistant turns once the next user message arrives. To the server, that's an edit: everything after the first dropped block gets recomputed, even though the agent never touched its context. SCR treats this like any other edit. On BrowseComp-Plus, SCR serves 7.8% of all prompt tokens from relocated cache, and 5.3 points of that come from dropped reasoning, against 2.5 from other context edits.
 
 ## 8. Limitations and open questions
 
 - **It depends on the model.** CLM leaves the decision of when and how to edit the context to the model, so its gains grow with the model's ability to make that decision. Qwen3.5-9B, for example, edits its context less often than Qwen3.6-27B.
 - **Models can't count their own tokens.** When we asked models to estimate how many tokens were in their context, they tended to answer with a few recurring values (like 6.2K, 9.8K, or 10.4K), and Claude 4.6 Sonnet tended to underestimate; GPT-5.4 was the best calibrated of the three models we tried. A token-count hint helps, and helps more the closer it is to the question. Today, CLM gets an editing reminder shortly before it reaches its budget; better built-in awareness would make that less necessary.
-- **An editable context is a new attack surface.** A prompt injection could try to get the model to gradually rewrite its own working memory, drop important constraints, or plant false history in a summary. Characterizing these attacks and defending against them without giving up flexibility is important future work.
+- **An editable context is a new attack surface.** A prompt injection could try to get the model to gradually rewrite its own working memory, drop important constraints, or plant false history in a summary. Such attacks are a practical concern: OpenAI has reported that [self-replicating prompt injections exist](https://alignment.openai.com/misalignment-reports/self-replicating-prompt-injections-exist/). Characterizing these attacks and defending against them without giving up flexibility is important future work.
 
 ## 9. Conclusion
 
-Context Language Models turn context management from a rule written into the harness into something the model does itself. The implementation is almost embarrassingly simple, a context file the model can edit, and yet it beats hand-designed strategies on tasks from synthetic diagnostics to 24-hour agent swarms. Because the behavior lives in the model, it can be steered with a sentence, improved by evolving a skill document, and trained with RL, and Suffix Cache Reuse keeps it cheap to serve.
+Context Language Models turn context management from a rule written into the harness into something the model does itself. The implementation is simple, a context file the model can edit, yet it outperforms hand-designed strategies on tasks from synthetic diagnostics to 24-hour agent swarms. Because the behavior lives in the model, it can be steered with a sentence, improved by evolving a skill document, and trained with RL, and Suffix Cache Reuse keeps it cheap to serve.
 
 **Where we'd go next.** The obvious direction is scaling RL so that CLMs can explore and learn context-management strategies well beyond what we tried here. A second is distilling existing harnesses into CLMs. A standard language model maps input tokens to next-token probabilities, and the harness decides how the context is built and updated. Most harness operations are context transformations, so they can be written as CLM actions and eventually learned in the weights. Seen this way, a harness is a form of procedural memory: a skill developed outside the model that a CLM can absorb and use more generally.
 

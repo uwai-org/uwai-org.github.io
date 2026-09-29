@@ -153,17 +153,21 @@
   // ------------------------------------------------------------------ Coding + deep research Pareto
   CHARTS.pareto = function (d, plot, controls) {
     var BENCH = [["BCP", "BrowseComp-Plus"], ["TB2.1", "TerminalBench 2.1"], ["TBLite", "TBLite"]];
-    var DOM = [[0, 0.28], [0.36, 0.64], [0.72, 1]];
     var MODELS = ["Qwen3.6-27B", "Qwen3.5-9B"].filter(function (m) { return d[m]; });
     var st = { model: "Qwen3.6-27B" };
     seg(controls, "Model", opts(MODELS), st.model, function (k) { st.model = k; draw(); });
-    var HEIGHT = 400, M = { l: 56, r: 12, t: 34, b: 58 };
-    plot.style.height = HEIGHT + "px";
 
     function draw() {
+      // Three panels side by side; stacked vertically when the column is too narrow for that.
+      var stacked = plot.clientWidth < 620;
+      var HEIGHT = stacked ? 820 : 380;
+      var M = stacked ? { l: 56, r: 12, t: 30, b: 50 } : { l: 50, r: 8, t: 30, b: 56 };
+      var XD = stacked ? [[0, 1], [0, 1], [0, 1]] : [[0, 0.29], [0.355, 0.645], [0.71, 1]];
+      var YD = stacked ? [[0.75, 1], [0.375, 0.625], [0, 0.25]] : [[0, 1], [0, 1], [0, 1]];
+      plot.style.height = HEIGHT + "px";
       var traces = [], ann = [];
-      var lay = layout({ margin: M, showlegend: false });
-      var W = Math.max(480, plot.clientWidth - M.l - M.r), H = HEIGHT - M.t - M.b;
+      var lay = layout({ margin: M, showlegend: false, height: HEIGHT });
+      var W = Math.max(280, plot.clientWidth - M.l - M.r), H = HEIGHT - M.t - M.b;
       BENCH.forEach(function (bench, bi) {
         var k = bi ? String(bi + 1) : "", xa = "x" + k, ya = "y" + k;
         var pts = (d[st.model][bench[0]] || []).map(function (p) { return Object.assign({}, p); });
@@ -174,25 +178,29 @@
         yr = [Math.max(0, yr[0]), Math.min(100, yr[1] + 4)];
 
         // Label placement in this subplot's pixel space: try below/above/right/left and keep the
-        // first spot that clears every marker and every label placed so far.
-        var Wi = W * (DOM[bi][1] - DOM[bi][0]);
-        var px = function (p) { return [(p.cost - xr[0]) / (xr[1] - xr[0]) * Wi, (1 - (p.acc - yr[0]) / (yr[1] - yr[0])) * H]; };
+        // spot with the least overlap with markers and earlier labels (ties go to the earlier spot).
+        var Wi = W * (XD[bi][1] - XD[bi][0]), Hi = H * (YD[bi][1] - YD[bi][0]);
+        var px = function (p) { return [(p.cost - xr[0]) / (xr[1] - xr[0]) * Wi, (1 - (p.acc - yr[0]) / (yr[1] - yr[0])) * Hi]; };
         var boxes = pts.map(function (p) { var c = px(p); return [c[0] - 6, c[1] - 6, c[0] + 6, c[1] + 6]; });
         pts.sort(function (a, b) { return (b.arm === "CLM") - (a.arm === "CLM"); }).forEach(function (p) {
           var clm = p.arm === "CLM", w = p.arm.length * (clm ? 8 : 6.4) + 4, h = clm ? 17 : 15, c = px(p);
           var cand = clm
             ? [[0, -11, "center", "bottom"], [11, 0, "left", "middle"], [-11, 0, "right", "middle"], [0, 11, "center", "top"]]
             : [[0, 10, "center", "top"], [0, -10, "center", "bottom"], [10, 0, "left", "middle"], [-10, 0, "right", "middle"]];
-          var pick = cand[0], placed = null;
-          for (var i = 0; i < cand.length; i++) {
-            var o = cand[i], x0 = c[0] + o[0] - (o[2] === "center" ? w / 2 : o[2] === "right" ? w : 0);
+          var pick = cand[0], placed = null, bestCost = Infinity;
+          cand.forEach(function (o, i) {
+            var x0 = c[0] + o[0] - (o[2] === "center" ? w / 2 : o[2] === "right" ? w : 0);
             var y0 = c[1] + o[1] - (o[3] === "middle" ? h / 2 : o[3] === "bottom" ? h : 0);
             var b = [x0, y0, x0 + w, y0 + h];
-            var clash = b[0] < -20 || b[2] > Wi + 20 || b[1] < -10 || b[3] > H + 10 ||
-              boxes.some(function (q) { return b[0] < q[2] && b[2] > q[0] && b[1] < q[3] && b[3] > q[1]; });
-            if (!clash) { pick = o; placed = b; break; }
-          }
-          if (placed) boxes.push(placed);
+            var cost = i * 0.01 + 1000 * (Math.max(0, -b[0]) + Math.max(0, b[2] - Wi) +
+                                          Math.max(0, -10 - b[1]) + Math.max(0, b[3] - Hi - 10));
+            boxes.forEach(function (q) {
+              var ox = Math.min(b[2], q[2]) - Math.max(b[0], q[0]), oy = Math.min(b[3], q[3]) - Math.max(b[1], q[1]);
+              if (ox > 0 && oy > 0) cost += ox * oy;
+            });
+            if (cost < bestCost) { bestCost = cost; pick = o; placed = b; }
+          });
+          boxes.push(placed);
           ann.push({ x: p.cost, y: p.acc, xref: xa, yref: ya, text: clm ? "<b>CLM</b>" : p.arm, showarrow: false,
                      xanchor: pick[2], yanchor: pick[3], xshift: pick[0], yshift: -pick[1],
                      font: { size: clm ? 13 : 11, color: clm ? BLUE : INK } });
@@ -210,8 +218,8 @@
             marker: { size: 10, color: "#fff", line: { color: "#333", width: 1.3 } }, hovertemplate: base.map(hover) },
           { type: "scatter", mode: "markers", xaxis: xa, yaxis: ya, x: clm.map(function (p) { return p.cost; }), y: clm.map(function (p) { return p.acc; }),
             marker: { size: 14, color: BLUE }, hovertemplate: clm.map(hover) });
-        lay["xaxis" + k] = axis({ domain: DOM[bi], anchor: ya, range: xr, title: "PFLOPs / question" });
-        lay["yaxis" + k] = axis({ anchor: xa, range: yr, title: bi === 0 ? "Accuracy (%)" : "" });
+        lay["xaxis" + k] = axis({ domain: XD[bi], anchor: ya, range: xr, title: "PFLOPs / question" });
+        lay["yaxis" + k] = axis({ domain: YD[bi], anchor: xa, range: yr, title: (stacked || bi === 0) ? "Accuracy (%)" : "" });
         ann.push({ text: "<b>" + bench[1] + "</b>", xref: xa + " domain", yref: ya + " domain", x: 0.5, y: 1.04,
                    xanchor: "center", yanchor: "bottom", showarrow: false, font: { size: 13 } });
       });

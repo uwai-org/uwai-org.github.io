@@ -420,14 +420,6 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
   line-height: var(--figcaption-line-height);
   color: var(--color-text-secondary);
 }
-/* Wide charts (.wide.extra-wide, from theme.css) keep their controls and caption on the text column. */
-@media screen and (min-width: calc(745px + 2 * (52px + 206px + 52px))) {
-  .clm-chart.wide.extra-wide > .chart-controls,
-  .clm-chart.wide.extra-wide > p.chart-caption {
-    margin-left: calc(((var(--extra-wide-scale-factor) - 1) / 2) * var(--main-width));
-    max-width: var(--main-width);
-  }
-}
 .clm-tabs.ready > .tab {
   display: none;
 }
@@ -440,6 +432,47 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .clm-tabs .tab-source {
   font-family: var(--font-family-sans);
   font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Qualitative examples: outlined gallery; code spans follow the paper figure
+   (highlight = key new text, struck = deleted context, faded = code around it). */
+.clm-tabs.clm-examples {
+  padding: 14px 18px 12px;
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.45);
+}
+.clm-examples .hl {
+  color: #0550c8;
+  background-color: rgba(6, 104, 225, 0.1);
+  border-radius: 3px;
+}
+.clm-examples .rm {
+  color: #9a968e;
+  text-decoration: line-through;
+}
+.clm-examples .sc {
+  color: #b3aea5;
+}
+.clm-examples .edit-legend > p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 10px 0 0;
+  font-family: var(--font-family-code);
+  font-size: 12.5px;
+}
+.clm-examples .edit-legend span {
+  padding: 1px 6px;
+}
+.clm-examples .edit-legend .sc {
+  color: #9a968e;
+}
+.clm-tabs > p {
+  margin-top: 8px;
+  font-size: var(--figcaption-font-size);
+  line-height: var(--figcaption-line-height);
   color: var(--color-text-secondary);
 }
 
