@@ -541,11 +541,11 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 }
 
 /* ----- Medium widths (e.g. a half-screen window) -------------------- */
-/* Between 797px and 1106px the theme pins a narrow column to the left and keeps
-   a sidenote margin on the right, which reads as an empty strip wherever a
-   section has no notes. Center a single column there instead and fold sidenotes
-   inline behind their numbers, as the theme already does on phones. */
-@media screen and (min-width: calc(26px + 550px + 26px + 169px + 26px)) and (max-width: calc(52px + 745px + 52px + 206px + 52px - 1px)) {
+/* Below 1365px the theme hides the table of contents but pins the column to the
+   left and keeps a sidenote margin on the right, which reads as an empty strip
+   wherever a section has no notes. Center a single column there instead and fold
+   sidenotes inline behind their numbers, as the theme already does on phones. */
+@media screen and (min-width: calc(26px + 550px + 26px + 169px + 26px)) and (max-width: calc(745px + 2 * (52px + 206px + 52px) - 1px)) {
   header,
   nav#TOC,
   main,
