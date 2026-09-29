@@ -2,11 +2,11 @@
 layout: page
 title: About
 subtitle: Open agentic research.
-description: About WAI, a research organization formed by NLP / ML / System PhDs from the University of Washington.
+description: About WAI, a research organization formed by AI PhDs from the University of Washington.
 permalink: /about/
 ---
 
-WAI is a research organization formed by NLP / ML / System PhD students from the University of Washington. We work on agentic research across the full stack:
+WAI is a research organization formed by AI PhD students from the University of Washington. We work on agentic research across the full stack:
 data, training, and evaluation.
 
 AI has advanced faster than the understanding of it. Knowledge of how agents
@@ -32,7 +32,7 @@ agents and openly sharing how we do it.
   <li><a href="https://ivison.id.au/">Hamish Ivison</a></li>
   <li><a href="https://oseyincs.io/about/">Junjie Oscar Yin</a></li>
   <li><a href="https://rulinshao.github.io/">Rulin Shao</a></li>
-  <li>Steven Gao</li>
+  <!-- <li>Steven Gao</li> -->
 </ul>
 
 ## Advisors
