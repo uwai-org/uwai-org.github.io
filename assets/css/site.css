@@ -540,6 +540,44 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
   color: var(--color-text-secondary);
 }
 
+/* ----- Medium widths (e.g. a half-screen window) -------------------- */
+/* Between 797px and 1106px the theme pins a narrow column to the left and keeps
+   a sidenote margin on the right, which reads as an empty strip wherever a
+   section has no notes. Center a single column there instead and fold sidenotes
+   inline behind their numbers, as the theme already does on phones. */
+@media screen and (min-width: calc(26px + 550px + 26px + 169px + 26px)) and (max-width: calc(52px + 745px + 52px + 206px + 52px - 1px)) {
+  header,
+  nav#TOC,
+  main,
+  footer {
+    max-width: min(var(--main-width), calc(100vw - 2 * var(--line-height)));
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .sidenote,
+  .marginnote {
+    display: none;
+  }
+  .margin-toggle:checked + .sidenote,
+  .margin-toggle:checked + .marginnote {
+    display: block;
+    float: left;
+    clear: both;
+    width: 100%;
+    max-width: 100%;
+    margin-right: 0;
+    margin-top: var(--side-note-line-height);
+    vertical-align: baseline;
+  }
+  label.margin-toggle {
+    color: var(--color-link);
+    cursor: pointer;
+  }
+  label.margin-toggle:not(.sidenote-number) {
+    display: inline;
+  }
+}
+
 /* ----- Responsive nav/footer spacing ------------------------------- */
 @media screen and (max-width: 600px) {
   .post-list__link {
