@@ -240,6 +240,32 @@ figure:has(> img.fig-small) {
   margin-right: auto;
 }
 
+/* ----- Code blocks: boxed, with light syntax colors ------------------ */
+/* Pandoc wraps fenced code in div.sourceCode > pre.sourceCode and tags tokens
+   with short classes (co = comment, kw/cf = keyword, st = string, ...). */
+main div.sourceCode > pre,
+main pre:not(.sourceCode) {
+  background-color: var(--color-inline-code-bg);
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 8px;
+  padding: calc(0.5 * var(--line-height)) 6px;
+  overflow-x: auto;
+}
+pre > code.sourceCode .co { color: #7d7a73; font-style: italic; }
+pre > code.sourceCode .kw,
+pre > code.sourceCode .cf,
+pre > code.sourceCode .im { color: #8a3f9d; }
+pre > code.sourceCode .st,
+pre > code.sourceCode .vs,
+pre > code.sourceCode .ss,
+pre > code.sourceCode .ch { color: #2e7d4f; }
+pre > code.sourceCode .sc { color: #b35c00; }
+pre > code.sourceCode .dv,
+pre > code.sourceCode .fl,
+pre > code.sourceCode .bn { color: #b35c00; }
+pre > code.sourceCode .fu,
+pre > code.sourceCode .bu { color: #1f5fbf; }
+
 /* ----- Citation: render the cite blocks as clear, boxed code -------- */
 .citation pre {
   background-color: var(--color-inline-code-bg);
@@ -322,6 +348,137 @@ figure:has(> img.fig-small) {
   font-family: var(--font-family-sans);
   font-weight: 700;
   letter-spacing: 0.3px;
+}
+
+/* ----- Interactive charts and tab panels (assets/js/clm-charts.js) - */
+.clm-chart,
+.clm-tabs {
+  margin: calc(1.25 * var(--line-height)) 0;
+}
+.chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-bottom: 10px;
+  font-family: var(--font-family-sans);
+  font-size: 13px;
+  line-height: 20px;
+}
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+.seg-label {
+  color: var(--color-text-secondary);
+  margin-right: 3px;
+}
+.seg button {
+  font: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 999px;
+  padding: 3px 11px;
+  cursor: pointer;
+}
+.seg button:hover {
+  background-color: var(--color-table-heading);
+}
+.seg button.on {
+  color: #fff;
+  background-color: #0668E1;
+  border-color: #0668E1;
+}
+.seg.quotes button {
+  font-family: var(--font-family-prose);
+  font-style: italic;
+  font-size: 14px;
+  border-radius: 8px;
+  text-align: left;
+}
+.chart-plot {
+  width: 100%;
+  height: 420px;
+}
+.chart-slider {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-secondary);
+}
+.chart-slider input {
+  flex: 1;
+  accent-color: #0668E1;
+}
+.clm-chart > p.chart-caption {
+  margin-top: 8px;
+  font-size: var(--figcaption-font-size);
+  line-height: var(--figcaption-line-height);
+  color: var(--color-text-secondary);
+}
+.clm-tabs.ready > .tab {
+  display: none;
+}
+.clm-tabs.ready > .tab.on {
+  display: block;
+}
+.clm-tabs .tab > p {
+  margin-top: 0;
+}
+.clm-tabs .tab-source {
+  font-family: var(--font-family-sans);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Row of small task illustrations (image + short caption each). */
+.task-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  align-items: start;
+  margin: var(--line-height) 0 calc(0.5 * var(--line-height));
+}
+.task-row figure {
+  margin: 0;
+}
+.task-row img {
+  width: 100%;
+  height: auto;
+}
+.task-row figcaption {
+  text-align: center;
+  font-size: 13px;
+  line-height: 18px;
+}
+@media screen and (max-width: 600px) {
+  .task-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Reviewer notes in drafts. Hidden in production builds (see _layouts/default.html). */
+.draft-note {
+  margin: var(--line-height) 0;
+  padding: 8px 12px;
+  border: 1px dashed #d9480f;
+  border-radius: 6px;
+  background-color: #fff4e6;
+  color: #862e00;
+  font-family: var(--font-family-sans);
+  font-size: 13px;
+  line-height: 20px;
+}
+.draft-note > :first-child::before {
+  content: "Draft note: ";
+  font-weight: 700;
+}
+.draft-note p {
+  margin: 0;
 }
 
 /* ----- About: people grids ----------------------------------------- */
