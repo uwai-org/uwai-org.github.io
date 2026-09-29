@@ -44,12 +44,12 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 
 **Context Language Models (CLMs)** are language models that manage their own context. Instead of a harness deciding what to keep, summarize, or throw away, the model can rewrite its context however it wants. We implement this in the simplest way we could think of: **the context is a file**, and the model edits it with Bash like any other file.
 
-Built zero-shot from existing models, CLMs outperform state-of-the-art context-management strategies on tasks that run from minutes to more than a day. With Qwen3.6-27B at a 32K context limit, CLM scores **59.4% on BrowseComp-Plus against 53.3%** for the best baseline, while using 21.5% less compute. It also comes out ahead on 12-hour repository optimization, with 59% less compute, and in a 24-hour, six-repository agent swarm. Because context management is now something the model does, it can be **taught**: one sentence in the prompt changes the strategy, an evolution loop finds better strategies, and RL with a new **success-gated efficiency advantage** takes Qwen3.5-9B from 28.8% to 42.5% on BrowseComp-Plus. Finally, **Suffix Cache Reuse** cuts serving compute by 35% at the same accuracy.
+Built zero-shot from existing models, **CLMs outperform state-of-the-art context-management strategies** on tasks that run from minutes to more than a day. With Qwen3.6-27B at a 32K context limit, CLM scores 59.4% on BrowseComp-Plus against 53.3% for the best baseline, while using 21.5% less compute. It also comes out ahead on 12-hour repository optimization, with 59% less compute, and in a 24-hour, six-repository agent swarm. Because context management is now an intrinsic model behavior, **CLMs enable both in-context and parametric learning**. We show that CLMs can be steered with natural-language instructions and, through a standard skill-optimization loop, improve held-out accuracy on a context-management task by up to 35.9 points. We also introduce an online reinforcement learning method for CLMs, improving Qwen3.5-9B performance on BrowseComp-Plus by 47.6% while using 12% fewer FLOPs. Finally, we co-design *Suffix Cache Reuse* for CLM serving, cutting server-side compute by 35% at the same accuracy.
 
 **Resources:** [📄 Paper](#) · [👨‍💻 GitHub](https://github.com/facebookresearch/context-language-models) · [🐦 Tweet](#)
 :::
 
-This post walks through our paper on Context Language Models roughly the way we would give the talk: less formal, focused on the ideas and results we find most interesting, and with interactive versions of most figures. For the full details, see the paper and the code.
+This post gives a casual walkthrough of Context Language Models, highlighting the ideas and results we find most interesting. For a more detailed and technical dive, please see the paper and the code.
 
 ## 1. Context management is still hand-designed
 
