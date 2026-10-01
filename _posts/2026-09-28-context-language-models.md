@@ -8,6 +8,7 @@ math: true
 plotly: true
 scripts:
   - /assets/js/clm-charts.js
+  - /assets/js/flops-sim.js
 description: >-
   Context Language Models edit their own context, which breaks prefix caching
   after every edit. Suffix Cache Reuse reuses the cache of the text that
@@ -46,9 +47,11 @@ Model servers such as vLLM and SGLang cache the internal (key-value) states of e
 
 To compare methods that edit their context with methods that only append, we count the computation a server with prefix caching actually performs, which we call **prefix-reuse FLOPs**. At each turn the prompt has some number of tokens and the model generates a response. The server reuses the longest prefix of leading messages that already appeared in the prompt of an earlier turn, and processes only the rest of the prompt. So an edit invalidates the cached computation from the edited message onward, and a response is processed again when it first shows up in a later prompt, in addition to being generated when it was produced. Each processed or generated token pays a fixed cost for the model's linear layers, and the full-attention layers add a cost that grows with the context length; the cost of a trajectory is the sum over its turns.
 
-![FLOPs of one Qwen3.6-27B turn with a 20K-token prompt and a 500-token response, for three lengths of the reusable prefix. Colors split the FLOPs actually computed by operation; gray shows the additional computation that would be needed without prefix caching. The lengths are chosen for illustration and do not come from a particular run.]({{ '/assets/img/clm/flops-cache-bars.png' | relative_url }})
+::: {.flops-sim}
+**FLOPs of one Qwen3.6-27B turn.** The context before the turn is A B C; an edit at the chosen position replaces B with B′, and the model then generates a 500-token response. Bars split the FLOPs actually computed by operation, and gray shows what caching avoids relative to processing the whole prompt. Suffix Cache Reuse is counted with B′ processed through every layer and the unchanged text C relocated in one span. Hover over any segment for exact values.
+:::
 
-For a sense of scale, take one Qwen3.6-27B turn with a 20K-token prompt and a 500-token response. When the turn only appends to its context, prefix caching avoids 87% of the computation, and the turn costs 1.41 × 10¹⁴ FLOPs. An edit in the middle of the context leaves 10K reusable tokens and raises the cost to 5.74 × 10¹⁴ FLOPs. An edit at the very start, which here is the same as having no cache at all, costs 10.81 × 10¹⁴ FLOPs, 7.7 times the append-only turn.
+For a sense of scale, take one Qwen3.6-27B turn with a 20K-token prompt and a 500-token response (the first three examples in the figure). When the turn only appends to its context, prefix caching avoids 87% of the computation, and the turn costs 1.41 × 10¹⁴ FLOPs. An edit in the middle of the context leaves 10K reusable tokens and raises the cost to 5.74 × 10¹⁴ FLOPs. An edit at the very start, which here is the same as having no cache at all, costs 10.81 × 10¹⁴ FLOPs, 7.7 times the append-only turn.
 
 ## The cost metric already pays for cache misses
 
