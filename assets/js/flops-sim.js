@@ -248,13 +248,20 @@
       } else {
         // Two stacked bars with the same composition as the first figure; the C re-prefill that
         // Suffix Cache Reuse removes is drawn as a dashed green outline on the SCR bar.
-        var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40;
+        var H = 272, top = 62, bot = 58, plotH = H - top - bot, x0 = 40;
         var segs = segsOf(t), tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
         var kept = segs.slice(0, 2), ktot = kept[0].total + kept[1].total, cseg = segs[2];
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
         text(bars, 0, 12, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap");
-        text(bars, BW - 4, 27, "no cache " + e14(t.none.total), "fs-ref-t", "end");
+        // legend for the bar colors (Rulin 2026-09-30): same encoding as the first figure
+        var leg = [[segs[2].fill, "C re-prefill", 0, 0], [segs[1].fill, "B′ prefill", 1, 0], [segs[0].fill, "decode", 0, 1], ["dash", "saved by SCR", 1, 1]];
+        leg.forEach(function (g) {
+          var lx = 2 + g[2] * 118, ly = 22 + g[3] * 15;
+          if (g[0] === "dash") sv("rect", { x: lx, y: ly, width: 11, height: 10, fill: "rgba(61,154,80,0.10)", stroke: COL.reused, "stroke-width": 1.2, "stroke-dasharray": "3 2" }, bars);
+          else sv("rect", { x: lx, y: ly, width: 11, height: 10, rx: 2, fill: g[0] }, bars);
+          text(bars, lx + 15, ly + 9, g[1], "fs-leg");
+        });
         var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
         for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
           var yy = yv(v * 1e14);
@@ -272,7 +279,8 @@
         if (gh > 28) { var g1 = text(bars, c2, ytop - gh / 2 - 2, "saved", "fs-seg-v", "middle"); g1.setAttribute("fill", COL.reused); var g2 = text(bars, c2, ytop - gh / 2 + 11, "by SCR", "fs-seg-v", "middle"); g2.setAttribute("fill", COL.reused); }
         text(bars, c2, ytop - 6, e14(ktot), "fs-bar-v", "middle");
         text(bars, c2, base + 16, "+ SCR", "fs-bar-l", "middle");
-        text(bars, x0 + (BW - x0) / 2, H - 4, "SCR: " + (tot / ktot).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
+        text(bars, x0 + (BW - x0) / 2, H - 20, "SCR: " + (tot / ktot).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
+        text(bars, x0 + (BW - x0) / 2, H - 6, "no cache: " + e14(t.none.total), "fs-ref-t", "middle");
         bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
       }
       stats.innerHTML = mode === "standard"

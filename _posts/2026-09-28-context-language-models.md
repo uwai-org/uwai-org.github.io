@@ -63,10 +63,6 @@ When we measure the cost of Context Language Models (CLMs),[^clm] we account for
 [[compacted]{.tok} [B]{.tok} [*B′* · prefill]{.tok-seg-label}]{.tok-seg .prefill .first-change}
 [[this]{.tok} [is]{.tok} [sentence]{.tok} [C]{.tok} [*C* · re-prefill]{.tok-seg-label}]{.tok-seg .prefill}
 :::
-
-::: {.tok-legend}
-[[ ]{.sw .sw-cached} prefix cache hit]{.item} [[ ]{.sw .sw-prefill} prefilled: *B′* and the unchanged *C*]{.item} [[×]{.sw-x} first prefix mismatch]{.item}
-:::
 ::::
 
 To account for this, we measure theoretical inference FLOPs with a metric we call **Prefix Reuse FLOPs**:
@@ -136,6 +132,8 @@ For the full details, see Appendix B of the paper.
 With standard prefix caching, changing an early part of a prompt forces the serving system to recompute the KV states of everything that follows, even when the later text is unchanged. Prior work relaxes this requirement in different settings. [Prompt Cache](https://arxiv.org/abs/2311.04934) precomputes attention states for predefined prompt modules, allowing a module to be reused in prompts that do not share the same preceding text. In retrieval-augmented generation, the same document may appear after different documents or instructions. [CacheBlend](https://arxiv.org/abs/2405.16444) and [EPIC](https://arxiv.org/abs/2410.15332) reuse cached document chunks in these new contexts, recomputing selected tokens to account for the changed surroundings.
 
 [PIE](https://arxiv.org/abs/2407.03157) studies cache reuse when a user modifies previously processed code and requests a new completion. It retains cached states for unchanged text after an edit and corrects their rotary positions, avoiding suffix recomputation. [Memento](https://arxiv.org/abs/2604.09852) evicts each completed reasoning block from the KV cache but keeps the cached states of its summary, which were computed while the block was still in context, and finds that these states retain useful information from the evicted block. Suffix Cache Reuse applies the same reuse principle to an agent's live context: when the agent replaces a span, the unchanged suffix retains its cached states rather than being prefilled again. We integrate this mechanism into SGLang for agent-driven context editing and further extend it to hybrid architectures that combine full-attention layers with linear-attention layers.
+
+Concurrently, [KV-streams](https://arxiv.org/abs/2609.35750), released in the last few days, keeps the KV cache across agentic compaction during reinforcement learning instead of flushing it, and reports a 2× speed-up on SWE tasks with any compaction method. That cache reuse across context edits is being picked up at the same time by several groups suggests it is becoming a hot topic, and we look forward to more work in this direction.
 
 ## Citation
 
