@@ -83,7 +83,7 @@
       var w = el("label", "fs-slider");
       var lab = el("span", "fs-lab");
       // colour the segment names like the token strip: B = removed (pink), B′ = inserted (rose)
-      lab.innerHTML = label.replace(/^B′/, '<span style="color:' + COL.edit + '">B′</span>').replace(/^B /, '<span style="color:#d4728f">B</span> ');
+      lab.innerHTML = label.replace(/^B′/, '<span style="color:' + COL.edit + '">B′</span>').replace(/^B /, '<span style="color:#8a857b">B</span> ');   // B is grey like the before-the-edit lane
       if (key === "p") lab.innerHTML += ' <svg class="fs-mark" width="10" height="8" viewBox="0 0 10 8" aria-hidden="true"><polygon points="0,0 10,0 5,8" fill="' + MARK + '"/></svg>';
       w.appendChild(lab);
       var inp = el("input"); inp.type = "range"; inp.min = min; inp.max = max; inp.step = step;
