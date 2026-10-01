@@ -94,9 +94,9 @@ The hit rate does drop with in-the-middle edits and incurs re-prefilling of the 
 Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But we ask: **can we adapt serving engines for AI's convenience**, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient on the system side.
 
 <figure class="ctx-fig">
-<div class="ctx-fig-row" label="original context"><span class="seg prev" style="--w:30"><i>A</i></span><span class="seg prev" style="--w:22"><i>B</i></span><span class="seg prev" style="--w:40"><i>C</i></span></div>
-<div class="ctx-fig-row" label="standard serving, after the edit"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg pre" style="--w:40"><i>C</i><b>re-prefilled</b></span></div>
-<div class="ctx-fig-row" label="Suffix Cache Reuse, after the edit"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg reu" style="--w:40"><i>C</i><b>suffix cache reused</b></span></div>
+<div class="ctx-fig-row" label="before the edit"><span class="seg prev" style="--w:30"><i>A</i></span><span class="seg prev" style="--w:22"><i>B</i></span><span class="seg prev" style="--w:40"><i>C</i></span></div>
+<div class="ctx-fig-row" label="standard serving"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg pre" style="--w:40"><i>C</i><b>re-prefilled</b></span><span class="seg gap" style="--w:10"></span></div>
+<div class="ctx-fig-row" label="Suffix Cache Reuse"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg reu" style="--w:40"><i>C</i><b>suffix cache reused</b></span><span class="seg gap" style="--w:10"></span></div>
 <figcaption>Standard serving versus Suffix Cache Reuse after an edit replaces B with B′. Standard serving reuses the cache for A but must prefill B′ and all of C again. Suffix Cache Reuse also reuses the cached states of C.</figcaption>
 </figure>
 
