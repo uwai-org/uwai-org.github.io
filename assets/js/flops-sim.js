@@ -96,10 +96,10 @@
       w.appendChild(inp); w.appendChild(val); grid.appendChild(w);
       sliders[key] = { inp: inp, val: val };
     }
-    slider("N", "Context length", 2000, 64000, 500);
-    slider("p", "Edit at", 0, 64000, 250);
-    slider("del", "Removes (B)", 0, 64000, 250);
-    slider("ins", "Inserts (B′)", 0, 8000, 100);
+    slider("N", "Context Length", 2000, 64000, 500);
+    slider("p", "Edit Position", 0, 64000, 250);
+    slider("del", "B Length (Removed)", 0, 64000, 250);
+    slider("ins", "B′ Length (Inserted)", 0, 8000, 100);
 
     function clamp(changed) {
       if (st.p > st.N) st.p = st.N;
