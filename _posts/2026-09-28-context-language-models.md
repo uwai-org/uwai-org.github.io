@@ -93,21 +93,26 @@ The hit rate does drop with in-the-middle edits and incurs re-prefilling of the 
 
 Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But we ask: **can we adapt serving engines for AI's convenience**, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient on the system side.
 
-![Standard serving versus Suffix Cache Reuse after an edit replaces B with B'. Standard serving reuses the cache for A but must process B' and all of C again. Suffix Cache Reuse also reuses the cached states of C.]({{ '/assets/img/clm/suffix-cache-reuse.png' | relative_url }})
+<figure class="ctx-fig">
+<div class="ctx-fig-row" label="original context"><span class="seg prev" style="--w:30"><i>A</i></span><span class="seg prev" style="--w:22"><i>B</i></span><span class="seg prev" style="--w:40"><i>C</i></span></div>
+<div class="ctx-fig-row" label="standard serving, after the edit"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg pre" style="--w:40"><i>C</i><b>re-prefilled</b></span></div>
+<div class="ctx-fig-row" label="Suffix Cache Reuse, after the edit"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg reu" style="--w:40"><i>C</i><b>suffix cache reused</b></span></div>
+<figcaption>Standard serving versus Suffix Cache Reuse after an edit replaces B with B′. Standard serving reuses the cache for A but must prefill B′ and all of C again. Suffix Cache Reuse also reuses the cached states of C.</figcaption>
+</figure>
 
-Say the context is A B C, and an edit replaces B with B'. Standard serving reuses the cache for A and then stops, because a prefix cache only matches up to the first changed token: B' and all of C are processed again, even though C did not change. **Suffix Cache Reuse (SCR)** keeps the cached states for C instead of throwing them away. When the next prompt arrives, SCR compares it with the previous prompt of the same session to find the spans that survived the edit, shifts their rotary position encodings to their new positions, and splices them in after B'. Only B' and newly appended tokens are processed.
+Say the context is [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap}, and an edit replaces [*B*]{.ctx-g} with [*B′*]{.ctx-e}. Standard serving reuses the cache for [*A*]{.ctx-o} and then stops, because a prefix cache only matches up to the first changed token: [*B′*]{.ctx-e} and all of [*C*]{.ctx-e} are prefilled again, even though [*C*]{.ctx-e} did not change. **Suffix Cache Reuse (SCR)** keeps the cached states for [*C*]{.ctx-r} instead of throwing them away. When the next prompt arrives, SCR compares it with the previous prompt of the same session to find the spans that survived the edit, shifts their rotary position encodings to their new positions, and splices them in after [*B′*]{.ctx-e}. Only [*B′*]{.ctx-e} and newly appended tokens are prefilled.
 
-This is an approximation: C's cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and processes the rest normally.[^k]
+::: {.flops-sim mode="scr"}
+**Adding Suffix Cache Reuse on top of prefix caching.** The same turn as in the first figure; the bars compare prefix caching with and without SCR, and the dashed green outline is the re-prefill of C that SCR removes. SCR is counted with B′ prefilled through every layer and C relocated as one span.
+:::
+
+**Technical details.** This is an approximation: C's cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and processes the rest normally.[^k]
 
 [^k]: In a sensitivity study on 64 BrowseComp-Plus questions, accuracy stays flat for one to 64 relocated spans per edit, while the cache savings mostly saturate by six. SCR is implemented as a patch to SGLang; relocated entries live in session-private cache slots, so the shared prefix cache never holds a moved entry.
 
 ![Suffix Cache Reuse for full-attention layers (left) and linear-attention layers (right).]({{ '/assets/img/clm/full-vs-linear-attention-reuse.png' | relative_url }})
 
 Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which keeps a fixed-size recurrent state rather than a per-token cache, so there are no per-token entries to move. For those layers, SCR continues from a snapshot of the recurrent state taken before the edit. The edit itself is seen by the 16 full-attention layers, and through their outputs it still reaches the later linear-attention layers.
-
-::: {.flops-sim mode="scr"}
-**Adding Suffix Cache Reuse on top of prefix caching.** The same turn as in the first figure; the bars compare prefix caching with and without SCR, and the dashed green outline is the re-prefill of C that SCR removes. SCR is counted with B′ prefilled through every layer and C relocated as one span.
-:::
 
 ## Results on BrowseComp-Plus
 

@@ -891,3 +891,21 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
   .tok { padding: 1px 5px; font-size: 14px; }
   .tok-seg-label { font-size: 11.5px; }
 }
+
+/* ----- Static A/B/C figure in the token-strip palette (Rulin 2026-10-01) ----- */
+.ctx-r { color: #2f7d3f; }
+figure.ctx-fig { margin: calc(1.25 * var(--line-height)) 0; }
+.ctx-fig-row { display: flex; gap: 6px; margin-top: 10px; }
+.ctx-fig-row + .ctx-fig-row { margin-top: 18px; }
+.ctx-fig-row::before { content: attr(label); display: block; flex: 0 0 11.5em; font-size: 14px; line-height: 30px; font-style: italic; color: var(--color-text-secondary); text-align: right; padding-right: 8px; white-space: nowrap; }
+.ctx-fig .seg { --fill: #bcd8ee; --ink: #1179b5; position: relative; flex: var(--w) 1 0; min-width: 0; height: 30px; border-radius: 4px; background: var(--fill); border: 1px solid var(--ink); display: flex; align-items: center; justify-content: center; }
+.ctx-fig .seg i { font-family: var(--font-family-prose); font-style: italic; font-size: 16px; color: var(--ink); }
+.ctx-fig .seg b { position: absolute; left: 0; right: 0; top: 34px; font-family: var(--font-family-sans); font-weight: 400; font-size: 11.5px; line-height: 14px; color: var(--ink); text-align: center; white-space: nowrap; }
+.ctx-fig .seg.prev { --fill: #e6e3dc; --ink: #8a857b; }
+.ctx-fig .seg.hit  { --fill: #bcd8ee; --ink: #1179b5; }
+.ctx-fig .seg.pre  { --fill: #f4c8d6; --ink: #c23962; }
+.ctx-fig .seg.reu  { --fill: #cfe8d4; --ink: #2f7d3f; }
+.ctx-fig .seg.first::before { content: "×"; position: absolute; left: -11px; top: 6px; font-family: var(--font-family-sans); font-size: 14px; font-weight: 700; color: #c23962; }
+.ctx-fig-row:not(:first-child) { margin-bottom: 18px; }   /* room for the labels under the blocks */
+figure.ctx-fig figcaption { margin-top: 22px; }
+@media (max-width: 720px) { .ctx-fig-row::before { flex-basis: 7.5em; font-size: 12px; } .ctx-fig .seg b { font-size: 10px; } }
