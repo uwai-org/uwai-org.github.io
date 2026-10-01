@@ -83,7 +83,9 @@ By default, we use this metric to measure CLM efficiency under standard serving.
 **Prefix Reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bar splits the Prefix Reuse FLOPs of the turn into the prefill of B′, the re-prefill of the unchanged C, and decoding.
 :::
 
-The hit rate does drop with in-the-middle edits. In our experiments with a Qwen3.6-27B CLM on BrowseComp-Plus, standard SGLang serves 72.9% of all prompt tokens from its prefix cache, but only 24.2% on the turns right after a context edit. The rest of an edited turn is prefilled again, including the large part of the context that the edit left unchanged. We note that this also happens beyond CLM serving: some chat endpoints remove the thinking tokens of earlier turns, so the tokens after them are re-prefilled in the next turn.
+The hit rate does drop with in-the-middle edits.[^think] In our experiments with a Qwen3.6-27B CLM on BrowseComp-Plus, standard SGLang serves 72.9% of all prompt tokens from its prefix cache, but only 24.2% on the turns right after a context edit. The rest of an edited turn is prefilled again, including the large part of the context that the edit left unchanged.
+
+[^think]: This also happens beyond CLM serving: some chat endpoints remove the thinking tokens of earlier turns, so the tokens after them are re-prefilled in the next turn.
 
 ## Suffix Cache Reuse
 
