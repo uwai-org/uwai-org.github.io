@@ -76,7 +76,7 @@ $$
 Every cost number in [the paper](https://arxiv.org/abs/2609.37725) uses this metric under standard serving, so when we say CLMs are cheaper than the baselines, that already includes the lower cache hit rate their edits cause. The visualization below shows how the Prefix Reuse FLOPs of one turn change with an edit.
 
 ::: {.flops-sim mode="standard"}
-**Prefix Reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bars compare the FLOPs of the turn with no cache and with prefix caching.
+**Prefix Reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bar splits the Prefix Reuse FLOPs of the turn into the prefill of B′, the re-prefill of the unchanged C, and decoding; the no-cache cost is noted above the bar.
 :::
 
 The hit rate does drop, and we measured it. With a Qwen3.6-27B CLM on BrowseComp-Plus, standard SGLang serves 72.9% of all prompt tokens from its prefix cache, but only 24.2% on the turns right after a context edit. The rest of an edited turn is processed again, including the large part of the context that the edit left unchanged.
