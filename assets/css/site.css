@@ -724,6 +724,7 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 @media (max-width: 640px) { .fs-grid { grid-template-columns: 1fr; } }
 .fs-slider { display: grid; grid-template-columns: 12.2em 1fr 7.4em; align-items: center; gap: 10px; }
 .fs-slider .fs-lab { white-space: nowrap; }
+.fs-slider .fs-lab .fs-mark { display: inline-block; vertical-align: 0; margin-left: 2px; }
 .fs-slider .fs-lab { margin: 0; }
 .fs-slider input { width: 100%; accent-color: #0668E1; }
 .fs-val { font-family: var(--font-family-code); font-size: 12px; color: var(--color-text); white-space: nowrap; }

@@ -16,6 +16,7 @@
   var PER_PAIR = 3.93216e5;                    // full-attention query-key pair
   var G = 500;                                 // response tokens
 
+  var MARK = "#1179b5";   // edit-position marker (light blue triangle), also shown after the slider label
   var COL = { cached: "#d8d3c7", prefill: "#e39bb0", edit: "#c23a63", reused: "#3d9a50", gen: "#0668E1", removed: "#e39bb0" };
 
   function el(tag, cls, text) {
@@ -83,6 +84,7 @@
       var lab = el("span", "fs-lab");
       // colour the segment names like the token strip: B = removed (pink), B′ = inserted (rose)
       lab.innerHTML = label.replace(/^B′/, '<span style="color:' + COL.edit + '">B′</span>').replace(/^B /, '<span style="color:#d4728f">B</span> ');
+      if (key === "p") lab.innerHTML += ' <svg class="fs-mark" width="10" height="8" viewBox="0 0 10 8" aria-hidden="true"><polygon points="0,0 10,0 5,8" fill="' + MARK + '"/></svg>';
       w.appendChild(lab);
       var inp = el("input"); inp.type = "range"; inp.min = min; inp.max = max; inp.step = step;
       var val = el("span", "fs-val");
@@ -155,7 +157,12 @@
       }
       var maxTok = Math.max.apply(null, lanes.map(function (l) { return l.segs.reduce(function (a, s) { return a + Math.max(0, s.n); }, 0); }));
       var sx = function (k) { return LBL + BAR * k / maxTok; };
-      var y = 4;
+      var y = 14;   // room for the edit-position marker above the first lane
+      (function () {
+        var mx = sx(t.p);
+        var tri = sv("polygon", { points: (mx - 5) + "," + (y - 10) + " " + (mx + 5) + "," + (y - 10) + " " + mx + "," + (y - 2), fill: MARK }, strips);
+        hover(tri, "<b>edit position</b> · token " + num(t.p) + "<br><span>the first changed token; the prefix cache matches up to here</span>");
+      })();
       lanes.forEach(function (l) {
         text(strips, LBL - 12, y + (l.sub ? 9 : 14), l.label, "fs-lane", "end");
         if (l.sub) text(strips, LBL - 12, y + 21, l.sub, "fs-lane-sub", "end");
