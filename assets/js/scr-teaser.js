@@ -89,10 +89,8 @@
     var GREEN = "#3d9a50";
     sv("rect", { x: xC2 - 1, y: y2 - 2.5, width: xE2 - xC2 + 2, height: bh + 5, rx: 6, fill: "none",
       stroke: GREEN, "stroke-width": 1.8 }, svg);
-    var tagW = 34, tagH = 15, tx = xE2 - 1.5 - tagW - 3, ty = y2 + bh - tagH - 3;
-    sv("rect", { x: tx, y: ty, width: tagW, height: tagH, rx: 3, fill: GREEN }, svg);
-    var tg = text(svg, tx + tagW / 2, ty + tagH - 4, "SCR", "st-tag");
-    tg.setAttribute("fill", "#ffffff");
+    var tg = text(svg, xE2 + 9, y2 + bh / 2 + 5, "SCR", "st-tag");   // green label outside, to the right of the block
+    tg.setAttribute("fill", GREEN);
 
     text(svg, labW, y1 + bh / 2 + 5, narrow ? "before" : "before the edit", "st-row", "end");
     text(svg, labW, y2 + bh / 2 + 5, narrow ? "after" : "after the edit", "st-row", "end");
