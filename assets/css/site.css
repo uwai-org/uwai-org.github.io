@@ -340,6 +340,7 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .tok-seg.prev { --fill: #e6e3dc; --ink: #8a857b; }
 .ctx-g { color: #8a857b; }
 .marginnote .clm-cover { display: block; width: 100%; margin-top: 8px; border: 1px solid var(--color-border); border-radius: 6px; }
+.sidenote .sn-fig { display: block; width: 100%; margin-top: 8px; }
 .post-hero .post-subtitle .sidenote { font-size: 11px; line-height: 1.35; white-space: normal; text-align: left; }
 .post-hero .post-date {
   font-family: var(--font-family-sans);
