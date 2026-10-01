@@ -20,7 +20,7 @@ description: >-
 <h1 class="title">Suffix Cache Reuse Explained</h1>
 
 :::: {.post-subtitle}
-Deep Dive in Efficient Serving for Context Language Models
+Deep Dive in Efficient Serving for [Context Language Models]{.clm-blue}
 ::::
 
 :::: {.byline}
