@@ -62,13 +62,13 @@ agents and openly sharing how we do it.
 
 ## Projects
 
+### [Context Language Models](https://arxiv.org/abs/2609.37725)
+
+**Team:** Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, Pang Wei Koh
+
 ### [TMax](/blog/tmax/) — an open recipe for state-of-the-art terminal agents.
 
 **Team:** Hamish Ivison\*, Junjie Oscar Yin\*, Rulin Shao, Teng Xiao, Nathan Lambert, Hannaneh Hajishirzi
-
-### [Context Language Models](https://arxiv.org/abs/2609.37725) — language models that natively manage their own context.
-
-**Team:** Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, Pang Wei Koh
 
 <!-- - **Humanity Last System** — a one-line description of what it does. -->
 <!-- - **Project Three** — a one-line description of what it does. -->
