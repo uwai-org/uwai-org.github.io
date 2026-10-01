@@ -36,15 +36,9 @@ September 28, 2026
 Before publishing: confirm author formatting (the TMax post bolds co-first authors; the paper marks none), the publication date, and the missing links in the resources line (arXiv, tweet). Draft notes like this one only show up in local builds; production builds hide them.
 :::
 
-::: {.tldr}
-[TL;DR]{.tldr-label}
-
-[Context Language Models (CLMs)](https://arxiv.org/abs/2609.37725) manage their own context by editing it, but every edit in the middle of the context breaks the server's prefix cache, and everything after the edit is processed again. We measured how much cache CLMs lose, and co-designed **Suffix Cache Reuse (SCR)**, a patch to SGLang that also reuses the cache of the text that survives an edit. On BrowseComp-Plus with Qwen3.6-27B, SCR cuts serving compute from 10.98 to 7.14 PFLOPs per question (−35%) at the same accuracy. It also helps standard reasoning-model serving with no context editing at all, and we found that much of the cache that is still missed comes from how current servers handle hybrid linear-attention models.
-
 **Resources:** [📄 Paper](https://arxiv.org/abs/2609.37725) · [👨‍💻 GitHub](https://github.com/facebookresearch/context-language-models) · [🐦 Tweet](#)
-:::
 
-The question we hear most often about Context Language Models is about the KV cache: if the model keeps rewriting its context, doesn't it throw away the server's cache on every edit? It does lose part of it. This post covers how much, what we do about it, and what is still left on the table. For CLMs themselves, see the paper.
+The question we hear most often about Context Language Models is about the KV cache: if the model keeps rewriting its context, doesn't it throw away the server's cache on every edit? It does lose part of it. This post covers how much, what we do about it, and what is still left on the table. For CLMs themselves, see [the paper](https://arxiv.org/abs/2609.37725).
 
 ## The cost metric already pays for cache misses
 
