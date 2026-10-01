@@ -22,6 +22,10 @@ description: >-
 Deep Dive in Efficient Serving for Context Language Models
 ::::
 
+:::: {.byline}
+Rulin Shao & Oscar Yin in collaboration with others in CLM team
+::::
+
 :::: {.post-date}
 September 28, 2026
 ::::
