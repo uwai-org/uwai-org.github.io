@@ -143,7 +143,7 @@ We perform an end-to-end evaluation of SCR on BrowseComp-Plus by simply switchin
 
 Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question. On the turns right after an edit, SCR serves an extra 28.2% of the prompt from relocated cache that standard serving would have recomputed. CLMs were already cheaper than the baselines under standard serving, through better context management alone; SCR brings their serving cost down to 65% of that.
 
-**Bonus: reasoning-token stripping is a context edit too.** Other cache misses arise from reasoning-token stripping in chat-template serving. For models such as Qwen3.6, earlier reasoning blocks are removed from subsequent prompts, forcing the unchanged suffix to be processed again. SCR reuses this suffix cache as well. In fact, most of SCR’s extra reuse comes from stripped reasoning rather than CLM edits.
+**Bonus: reasoning-token stripping is a context edit too.** Other cache misses arise from reasoning-token stripping in some chat-template serving. For models such as Qwen3.6, earlier reasoning blocks are removed from subsequent prompts, forcing the unchanged suffix to be processed again. SCR reuses this suffix cache as well. In fact, most of SCR’s extra reuse comes from stripped reasoning rather than CLM edits.
 
 ![Where Suffix Cache Reuse finds reusable cache on BrowseComp-Plus, over all turns and over the turns right after an edit. Qwen3.6-27B, 830 questions.]({{ '/assets/img/clm/scr-strip-savings.png' | relative_url }})
 
