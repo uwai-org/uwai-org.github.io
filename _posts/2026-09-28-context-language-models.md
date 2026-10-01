@@ -93,12 +93,29 @@ The hit rate does drop with in-the-middle edits and incurs re-prefilling of the 
 
 Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But we ask: **can we adapt serving engines for AI's convenience**, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient on the system side.
 
-<figure class="ctx-fig">
-<div class="ctx-fig-row" label="before the edit"><span class="seg prev" style="--w:30"><i>A</i></span><span class="seg prev" style="--w:22"><i>B</i></span><span class="seg prev" style="--w:40"><i>C</i></span></div>
-<div class="ctx-fig-row" label="standard serving"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg pre" style="--w:40"><i>C</i><b>re-prefilled</b></span><span class="seg gap" style="--w:10"></span></div>
-<div class="ctx-fig-row" label="Suffix Cache Reuse"><span class="seg hit" style="--w:30"><i>A</i><b>prefix cache reused</b></span><span class="seg pre first" style="--w:12"><i>B′</i><b>prefilled</b></span><span class="seg reu" style="--w:40"><i>C</i><b>suffix cache reused</b></span><span class="seg gap" style="--w:10"></span></div>
-<figcaption>Standard serving versus Suffix Cache Reuse after an edit replaces B with B′. Standard serving reuses the cache for A but must prefill B′ and all of C again. Suffix Cache Reuse also reuses the cached states of C.</figcaption>
-</figure>
+::::: {.tok-viz .tok-viz-fig}
+::: {.tok-row label="before the edit"}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [A]{.tok} [*A*]{.tok-seg-label}]{.tok-seg .prev}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [B]{.tok} [*B*]{.tok-seg-label}]{.tok-seg .prev}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [C]{.tok} [*C*]{.tok-seg-label}]{.tok-seg .prev}
+:::
+
+::: {.tok-row label="standard serving"}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [A]{.tok} [*A* · hit prefix cache]{.tok-seg-label}]{.tok-seg}
+[[compacted]{.tok} [B]{.tok} [*B′* · prefilled]{.tok-seg-label}]{.tok-seg .prefill .first-change}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [C]{.tok} [*C* · re-prefilled]{.tok-seg-label}]{.tok-seg .prefill}
+:::
+
+::: {.tok-row label="Suffix Cache Reuse"}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [A]{.tok} [*A* · hit prefix cache]{.tok-seg-label}]{.tok-seg}
+[[compacted]{.tok} [B]{.tok} [*B′* · prefilled]{.tok-seg-label}]{.tok-seg .prefill .first-change}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [C]{.tok} [*C* · suffix cache reused]{.tok-seg-label}]{.tok-seg .reused}
+:::
+
+::: {.tok-caption}
+Standard serving versus Suffix Cache Reuse after an edit replaces B with B′. Standard serving hits the prefix cache for A but must prefill B′ and re-prefill all of C; Suffix Cache Reuse also reuses the cached states of C. The × marks the first prefix-mismatch position.
+:::
+:::::
 
 Say the context is [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap}, and an edit replaces [*B*]{.ctx-g} with [*B′*]{.ctx-e}. Standard serving reuses the cache for [*A*]{.ctx-o} and then stops, because a prefix cache only matches up to the first changed token: [*B′*]{.ctx-e} and all of [*C*]{.ctx-e} are prefilled again, even though [*C*]{.ctx-e} did not change. **Suffix Cache Reuse (SCR)** keeps the cached states for [*C*]{.ctx-r} instead of throwing them away. When the next prompt arrives, SCR compares it with the previous prompt of the same session to find the spans that survived the edit, shifts their rotary position encodings to their new positions, and splices them in after [*B′*]{.ctx-e}. Only [*B′*]{.ctx-e} and newly appended tokens are prefilled.
 
