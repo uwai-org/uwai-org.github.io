@@ -67,7 +67,6 @@
     var strips = sv("svg", { class: "fs-svg", role: "img", "aria-label": "Tokens of the turn" }, left);
     var BW = 250;
     var bars = sv("svg", { class: "fs-svg fs-bars", role: "img", "aria-label": "Prefix Reuse FLOPs of the turn" }, right);
-    var stats = el("div", "fs-stats"); left.appendChild(stats);
     var tip = el("div", "fs-tip"); box.appendChild(tip);
 
     var ctl = el("div", "fs-controls"); box.appendChild(ctl);
@@ -285,9 +284,6 @@
         text(bars, x0 + (BW - x0) / 2, H - 6, "no cache: " + e14(t.none.total), "fs-ref-t", "middle");
         bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
       }
-      stats.innerHTML = mode === "standard"
-        ? "prompt <b>" + num(t.P) + "</b> tokens · the edit makes the server re-prefill <b>" + num(t.C) + "</b> unchanged tokens"
-        : "SCR reuses the cache of <b>" + num(t.C) + "</b> unchanged tokens and prefills only B′ (<b>" + num(t.ins) + "</b> tokens)";
     }
 
     sync();
