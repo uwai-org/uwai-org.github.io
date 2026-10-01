@@ -93,9 +93,9 @@
       sliders[key] = { inp: inp, val: val };
     }
     // order (Rulin 2026-10-01): the edit first, then where it sits, then the context size
+    slider("p", "Edit Position", 0, 64000, 250);
     slider("del", "B Length (Removed)", 0, 64000, 250);
     slider("ins", "B′ Length (Inserted)", 0, 64000, 250);   // any length, same range as the others (Rulin 2026-10-01)
-    slider("p", "Edit Position", 0, 64000, 250);
     slider("N", "Context Length", 2000, 64000, 500);
 
     function clamp(changed) {
