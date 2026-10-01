@@ -49,7 +49,7 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 
 When we measure the cost of Context Language Models (CLMs), we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Model servers such as vLLM and SGLang reuse the cached states of a prompt prefix that matches an earlier request, but every token from the first prefix mismatch onward must be prefilled again. This is exactly what happens after an edit in the middle of the context.
 
-[^clm]: Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, and Pang Wei Koh. "[Context Language Models](https://arxiv.org/abs/2609.37725)." arXiv preprint arXiv:2609.37725, 2026.
+[^clm]: Shao et al., "[Context Language Models](https://arxiv.org/abs/2609.37725)", arXiv:2609.37725, 2026. BibTeX at the end of the post.
 
 :::: {.tok-viz}
 ::: {.tok-row label="previous prompt, already in the cache"}
@@ -135,15 +135,6 @@ We thank Sewon Min and Steven Zijian Chen for helpful discussions, and Ilia Kuli
 
 ::: {.citation}
 Please cite this work as:
-
-```
-Shao, Rulin and Shen, Shannon Zejiang and Yin, Junjie Oscar and Li, Yuetai and
-Wang, Minheng and Ivison, Hamish and Poovendran, Radha and Lambert, Nathan and
-Xiao, Teng and Lewis, Mike and Yih, Wen-tau and Zettlemoyer, Luke and
-Koh, Pang Wei, "Context Language Models", arXiv preprint arXiv:2609.37725, 2026.
-```
-
-Or use the BibTeX citation:
 
 ```
 @article{shao2026context,
