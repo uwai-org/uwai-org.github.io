@@ -150,6 +150,8 @@
       var maxTok = Math.max.apply(null, lanes.map(function (l) { return l.segs.reduce(function (a, s) { return a + Math.max(0, s.n); }, 0); }));
       var sx = function (k) { return LBL + BAR * k / maxTok; };
       var y = 4;
+      text(strips, LBL + (W - LBL) / 2, y + 9, "CONTEXT EDIT AND CACHE REUSE", "fs-cap fs-cap-r", "middle");   // panel title, centred over the strips
+      y += 20;
       // ---- schematic header: [A][B][C] -> [A][B′][C]
       (function () {
         var hx = LBL, hy = y, bh = 18;
