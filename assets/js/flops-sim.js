@@ -55,7 +55,7 @@
     var mode = node.getAttribute("data-mode") === "scr" ? "scr" : "standard";
     Array.prototype.forEach.call(node.children, function (c) { if (c.tagName === "P") c.classList.add("chart-caption"); });
 
-    var st = { N: 64000, p: 22250, del: 40000, ins: 2000 };   // default: a large compaction in a 64K context
+    var st = { N: 40000, p: 18000, del: 12000, ins: 8000 };   // default (Rulin 2026-10-01): a mid-context rewrite in a 40K context
     var box = el("div", "fs-box");
     node.insertBefore(box, node.firstChild);
 
