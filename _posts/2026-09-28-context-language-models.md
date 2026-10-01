@@ -64,8 +64,6 @@ When we measure the cost of Context Language Models (CLMs),[^clm] we account for
 :::
 ::::
 
-![Standard serving after an edit replaces B with B′. The prefix cache covers A; B′ and all of the unchanged C are prefilled again.]({{ '/assets/img/clm/standard-serving.png' | relative_url }})
-
 To account for this, we measure theoretical inference FLOPs with a metric we call **Prefix Reuse FLOPs**:
 
 $$
