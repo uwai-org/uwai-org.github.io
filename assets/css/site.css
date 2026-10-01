@@ -694,7 +694,8 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .fs-pill.on { color: #fff; background: #0668E1; border-color: #0668E1; }
 .fs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 28px; }
 @media (max-width: 640px) { .fs-grid { grid-template-columns: 1fr; } }
-.fs-slider { display: grid; grid-template-columns: 8.6em 1fr 7.4em; align-items: center; gap: 10px; }
+.fs-slider { display: grid; grid-template-columns: 12.2em 1fr 7.4em; align-items: center; gap: 10px; }
+.fs-slider .fs-lab { white-space: nowrap; }
 .fs-slider .fs-lab { margin: 0; }
 .fs-slider input { width: 100%; accent-color: #0668E1; }
 .fs-val { font-family: var(--font-family-code); font-size: 12px; color: var(--color-text); white-space: nowrap; }
