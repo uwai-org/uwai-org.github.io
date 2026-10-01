@@ -147,13 +147,10 @@ Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 P
 
 ![Where Suffix Cache Reuse finds reusable cache on BrowseComp-Plus, over all turns and over the turns right after an edit. Qwen3.6-27B, 830 questions.]({{ '/assets/img/clm/scr-strip-savings.png' | relative_url }})
 
-**What is still missed, and why.** We also looked at the unchanged tokens that are still prefilled with SCR.
+**What is still missed, and why.** We also looked at the unchanged tokens that are still prefilled with SCR. SCR removes most re-prefilling of unchanged suffixes after an edit. Much of the remaining overhead comes from unchanged prefixes that standard SGLang fails to reuse efficiently for hybrid models, because linear-attention states are cached only at request boundaries. This leaves substantial room for improvement: finer-grained recurrent-state checkpoints could increase cache hit rates for both standard prefix caching and SCR. More broadly, serving models with editable context opens many new systems research directions.
 
 ![Remaining re-prefill under standard serving and under Suffix Cache Reuse on BrowseComp-Plus, split by why each token was prefilled. Same runs as above.]({{ '/assets/img/clm/scr-prefill-split.png' | relative_url }})
 
-SCR removes most of the re-prefilling of unchanged text *after* an edit (31.1% of the prompt on edited turns under standard serving, 5.0% under SCR). Much of what remains is unchanged text *before* the edit, which a prefix cache should match in principle. This turns out to be a limitation of how standard SGLang caches hybrid models, not of SCR. Full-attention layers keep a cache entry for every token, so a match can stop exactly where the prompt changes. Linear-attention layers only have their recurrent state saved at a few points (at cached request boundaries in SGLang), so when a later prompt diverges in the middle of a cached span, the nearest usable state can be far before the divergence, and the match falls back to a much shorter prefix.
-
-Over all turns, standard SGLang misses 8.1% of the prompt tokens this way, and 29.5% on edited turns. SCR still leaves a similar margin (6.4% and 22.7%). Saving recurrent states more often, for example at every message boundary, would trade memory for hit rate and improve both standard prefix caching and SCR; there may well be better techniques for it. We think there are many good research directions in serving models that edit their own context.
 
 ## Related work
 
