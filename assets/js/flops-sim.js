@@ -172,7 +172,7 @@
         y += 36;
       });
       var lx = LBL, ly = y;
-      var legend = [["cached", COL.cached], ["B′ prefilled", COL.edit], ["C re-prefilled", COL.prefill]];
+      var legend = [["prefix cached", COL.cached], ["B′ prefilled", COL.edit], ["C re-prefilled", COL.prefill]];
       if (mode === "scr") legend.push(["reused by SCR", COL.reused]);
       legend.push(["generated", COL.gen]);
       legend.forEach(function (g) {
