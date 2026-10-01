@@ -127,9 +127,13 @@ Over all turns, standard SGLang misses 8.1% of the prompt tokens this way, and 2
 
 For the full details, see Appendix B of the paper.
 
-## Acknowledgements
+## Related work
 
-We thank Sewon Min and Steven Zijian Chen for helpful discussions, and Ilia Kulikov and Mickel Liu for their help with infrastructure questions. This work was supported by the Singapore National Research Foundation and the National AI Group in the Singapore Ministry of Digital Development and Information under the AI Visiting Professorship Programme (award number AIVP-2024-001), and by the AI2050 program at Schmidt Sciences.
+Prefix caching is standard in serving engines. vLLM's [PagedAttention](https://arxiv.org/abs/2309.06180) and SGLang's [RadixAttention](https://arxiv.org/abs/2312.07104) keep the KV cache of earlier requests and reuse it for any new prompt that shares a prefix; everything after the first mismatch is prefilled again, which is the cost this post starts from.
+
+A line of work reuses cache for text that is not a prefix. [Prompt Cache](https://arxiv.org/abs/2311.04934) precomputes attention states for prompt modules at fixed positions. [CacheBlend](https://arxiv.org/abs/2405.16444), [Block-Attention](https://arxiv.org/abs/2409.15355), [EPIC](https://arxiv.org/abs/2410.15332) and [KVLink](https://arxiv.org/abs/2502.16002) reuse the cache of retrieved chunks placed at new positions and recover accuracy by recomputing a few tokens, by training the model to accept independently encoded blocks, or by inserting link tokens. These methods target retrieval, where the reused text is known ahead of time and the same chunk appears in many prompts.
+
+Suffix Cache Reuse applies the same idea inside one conversation: the reused text is whatever survives the model's own edit, it is reused once, and nothing is retrained or recomputed. The reused states keep their dependence on the replaced text; the results above show that this approximation costs no accuracy on BrowseComp-Plus, and the last section measures what it still leaves on the table.
 
 ## Citation
 
