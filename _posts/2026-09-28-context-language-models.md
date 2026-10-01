@@ -143,13 +143,11 @@ We perform an end-to-end evaluation of SCR on BrowseComp-Plus by simply switchin
 
 Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question. On the turns right after an edit, SCR serves an extra 28.2% of the prompt from relocated cache that standard serving would have recomputed. CLMs were already cheaper than the baselines under standard serving, through better context management alone; SCR brings their serving cost down to 65% of that.
 
-**Bonus: server-side thinking-token stripping is a context edit too.** CLM editing is not the only source of context edits. The chat templates of many reasoning models, including Qwen3.6, drop the reasoning blocks of earlier assistant turns once the next user message arrives. This is a server-side edit that happens even when the agent never touches its context: everything after the first dropped block is prefilled again. As a result, each turn's final answer is prefilled twice, once when it is generated and again when the next prompt arrives without the reasoning in front of it.
-
-SCR treats the dropped reasoning like any other edit and reuses the cache of the text after it. Breaking down where SCR's savings come from gave us a surprise: more of the reused cache comes from dropped reasoning than from the CLM's own edits.
+**Bonus: reasoning-token stripping is a context edit too.** Other cache misses arise from reasoning-token stripping in chat-template serving. For models such as Qwen3.6, earlier reasoning blocks are removed from subsequent prompts, forcing the unchanged suffix to be processed again. SCR reuses this suffix cache as well. In fact, most of SCR’s extra reuse comes from stripped reasoning rather than CLM edits.
 
 ![Where Suffix Cache Reuse finds reusable cache on BrowseComp-Plus, over all turns and over the turns right after an edit. Qwen3.6-27B, 830 questions.]({{ '/assets/img/clm/scr-strip-savings.png' | relative_url }})
 
-Over all turns, SCR reuses 7.8% of the prompt tokens beyond the prefix-cache hits; 5.3 points of that come after dropped reasoning and 2.5 after context edits. On the edited turns, the split is 19.3 against 8.9 points. So a large part of SCR's benefit also applies to standard reasoning-model serving, with no context editing at all.
+Over all turns, SCR reuses 7.8% of the prompt tokens beyond the prefix-cache hits; 5.3 points of that come after dropped reasoning and 2.5 after context edits. On the edited turns, the split is 19.3 against 8.9 points. So a large part of SCR's benefit also applies to standard reasoning-model serving, with no CLM editing at all.
 
 **What is still missed, and why.** We also looked at the prompt tokens that are still processed again under SCR.
 
