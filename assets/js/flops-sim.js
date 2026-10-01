@@ -1,32 +1,25 @@
-/* Interactive "FLOPs of one Qwen3.6-27B turn" figure for the Suffix Cache Reuse post.
+/* Interactive prefix-reuse FLOPs figures for the Suffix Cache Reuse post.
  *
- * Markup:  ::: {.flops-sim}  caption paragraph(s)  :::
+ * Markup:  ::: {.flops-sim mode="standard"}  caption  :::   (or mode="scr")
  *
- * The context before the turn is A B C (N tokens). The edit at position p replaces B with B'.
- * One response of G tokens is then generated. For each way of serving the turn we count
- * prefix-reuse FLOPs with the per-token and per-query-key-pair constants of Qwen3.6-27B
- * (paper, Appendix C): linear layers cost the same for every processed token, and the
- * 16 full-attention layers add a cost per query-key pair.
+ * The context before the turn is A B C (N tokens). An edit at position p replaces B with B',
+ * then the model generates a G-token response. FLOPs use the Qwen3.6-27B constants from the
+ * paper's Appendix C: linear layers cost the same per processed token, and the 16
+ * full-attention layers add a cost per query-key pair.
+ *   mode "standard": the turn with the edit vs. the same turn appending B' at the end instead,
+ *                    both under prefix caching.
+ *   mode "scr":      the turn with the edit under prefix caching vs. prefix caching + SCR.
  */
 (function () {
   "use strict";
 
-  // Qwen3.6-27B constants (FLOPs), two FLOPs per multiply-add.
-  var OPS = [
-    { key: "mlp", label: "MLP", per: 34.23e9, color: "#6f88a8" },
-    { key: "gdn", label: "Gated DeltaNet projections", per: 11.12e9, color: "#c9a57a" },
-    { key: "fap", label: "Full-attention projections", per: 3.36e9, color: "#9db08c" },
-    { key: "qk", label: "Full-attention query-key pairs", per: 3.93216e5, color: "#b07a8c" }
-  ];
-  var G = 500; // response tokens
-  var C_TOKEN = OPS[0].per + OPS[1].per + OPS[2].per;
+  var PER_TOKEN = 34.23e9 + 11.12e9 + 3.36e9; // MLP + Gated DeltaNet + full-attention projections
+  var PER_PAIR = 3.93216e5;                    // full-attention query-key pair
+  var G = 500;                                 // response tokens
 
-  var COL = {
-    cached: "#d8d3c7", prefill: "#e39bb0", reused: "#3d9a50", gen: "#0668E1", removed: "#e39bb0", avoided: "#e7e4dd"
-  };
+  var COL = { cached: "#d8d3c7", prefill: "#e39bb0", reused: "#3d9a50", gen: "#0668E1", removed: "#e39bb0" };
 
   var PRESETS = [
-    { key: "end", label: "append only", st: { N: 18000, p: 18000, del: 0, ins: 2000 } },
     { key: "mid", label: "edit in the middle", st: { N: 20000, p: 10000, del: 1000, ins: 1000 } },
     { key: "start", label: "edit at the start", st: { N: 20000, p: 0, del: 1000, ins: 1000 } },
     { key: "compact", label: "compact old turns", st: { N: 28000, p: 2000, del: 18000, ins: 1500 } }
@@ -45,69 +38,57 @@
     if (parent) parent.appendChild(n);
     return n;
   }
-  function fmtTok(x) {
-    x = Math.round(x);
-    if (x >= 1000) return (x / 1000).toFixed(x % 1000 === 0 ? 0 : 1) + "K";
-    return String(x);
-  }
-  function fmtTokFull(x) { return Math.round(x).toLocaleString("en-US"); }
+  function num(x) { return Math.round(x).toLocaleString("en-US"); }
   function e14(x) { return (x / 1e14).toFixed(2); }
 
-  // ------------------------------------------------------------------ cost model
-  function turn(st) {
-    var N = st.N, p = st.p, del = st.del, ins = st.ins;
-    var C = N - p - del;          // unchanged text after the edit
-    var P = p + ins + C;          // prompt after the edit
-    var dec = G * P + 0.5 * G * G; // query-key pairs while decoding
-    function cost(processed, pairs) {
-      var r = { mlp: 0, gdn: 0, fap: 0, qk: 0 };
-      var toks = processed + G;
-      r.mlp = OPS[0].per * toks; r.gdn = OPS[1].per * toks; r.fap = OPS[2].per * toks;
-      r.qk = OPS[3].per * (pairs + dec);
-      r.total = r.mlp + r.gdn + r.fap + r.qk;
-      return r;
-    }
-    var none = cost(P, 0.5 * P * P);
-    var std = cost(P - p, 0.5 * (P * P - p * p));
-    var scr = cost(ins, ins * p + 0.5 * ins * ins);
-    var app = cost(ins, 0.5 * (P * P - (P - ins) * (P - ins)));
-    return { N: N, p: p, del: del, ins: ins, C: C, P: P, none: none, std: std, scr: scr, app: app };
+  // FLOPs of one turn: `proc` prompt tokens processed with `pairs` query-key pairs, on a prompt
+  // of P tokens, followed by G generated tokens.
+  function flops(proc, pairs, P) {
+    var lin = PER_TOKEN * (proc + G);
+    var att = PER_PAIR * (pairs + G * P + 0.5 * G * G);
+    return { lin: lin, att: att, total: lin + att, proc: proc };
+  }
+  function model(st) {
+    var N = st.N, p = st.p, del = st.del, ins = st.ins, C = N - p - del, P = p + ins + C;
+    return {
+      N: N, p: p, del: del, ins: ins, C: C, P: P,
+      none: flops(P, 0.5 * P * P, P),
+      std: flops(P - p, 0.5 * (P * P - p * p), P),
+      scr: flops(ins, ins * p + 0.5 * ins * ins, P),
+      app: flops(ins, 0.5 * ((N + ins) * (N + ins) - N * N), N + ins)
+    };
   }
 
-  // ------------------------------------------------------------------ widget
   function mount(node) {
-    var caption = Array.prototype.filter.call(node.children, function (c) { return c.tagName === "P"; });
-    caption.forEach(function (c) { c.classList.add("chart-caption"); });
+    var mode = node.getAttribute("data-mode") === "scr" ? "scr" : "standard";
+    Array.prototype.forEach.call(node.children, function (c) { if (c.tagName === "P") c.classList.add("chart-caption"); });
 
     var st = { N: 20000, p: 10000, del: 1000, ins: 1000 };
     var box = el("div", "fs-box");
     node.insertBefore(box, node.firstChild);
 
-    var head = el("div", "fs-head");
-    head.appendChild(el("span", "fs-fig", "Interactive"));
-    head.appendChild(el("span", "fs-title", "FLOPs of one Qwen3.6-27B turn"));
-    box.appendChild(head);
-    box.appendChild(el("div", "fs-sub", "move the edit, change what it removes and inserts, grow the context: see what prefix caching saves and what Suffix Cache Reuse adds"));
+    var main = el("div", "fs-main"); box.appendChild(main);
+    var left = el("div", "fs-left"), right = el("div", "fs-right");
+    main.appendChild(left); main.appendChild(right);
 
-    var W = 860, LBL = 150, RGT = 196, BAR = W - LBL - RGT;
-    var svg = sv("svg", { viewBox: "0 0 " + W + " 330", class: "fs-svg", role: "img", "aria-label": "Token strips and FLOPs bars for one turn" });
-    box.appendChild(svg);
+    var W = 600, LBL = 128, BAR = W - LBL - 8;
+    var strips = sv("svg", { class: "fs-svg", role: "img", "aria-label": "Tokens of the turn" }, left);
+    var BW = 250;
+    var bars = sv("svg", { class: "fs-svg fs-bars", role: "img", "aria-label": "Prefix-reuse FLOPs of the turn" }, right);
+    var stats = el("div", "fs-stats"); left.appendChild(stats);
     var tip = el("div", "fs-tip"); box.appendChild(tip);
 
-    var stats = el("div", "fs-stats"); box.appendChild(stats);
-
     var ctl = el("div", "fs-controls"); box.appendChild(ctl);
-    var presetRow = el("div", "fs-row"); ctl.appendChild(presetRow);
-    presetRow.appendChild(el("span", "fs-lab", "Examples"));
+    var row = el("div", "fs-row"); ctl.appendChild(row);
+    row.appendChild(el("span", "fs-lab", "Examples"));
     var pbtn = {};
     PRESETS.forEach(function (pr) {
       var b = el("button", "fs-pill", pr.label); b.type = "button";
       b.addEventListener("click", function () { Object.keys(pr.st).forEach(function (k) { st[k] = pr.st[k]; }); sync(); });
-      pbtn[pr.key] = b; presetRow.appendChild(b);
+      pbtn[pr.key] = b; row.appendChild(b);
     });
-
-    var sliders = {};
     var grid = el("div", "fs-grid"); ctl.appendChild(grid);
+    var sliders = {};
     function slider(key, label, min, max, step) {
       var w = el("label", "fs-slider");
       w.appendChild(el("span", "fs-lab", label));
@@ -125,150 +106,143 @@
     function clamp(changed) {
       if (st.p > st.N) st.p = st.N;
       if (st.p + st.del > st.N) {
-        if (changed === "p") st.del = st.N - st.p; else if (changed === "del") st.p = Math.max(0, st.N - st.del); else st.del = Math.max(0, st.N - st.p);
+        if (changed === "p") st.del = st.N - st.p;
+        else if (changed === "del") st.p = Math.max(0, st.N - st.del);
+        else st.del = Math.max(0, st.N - st.p);
       }
     }
-
     function sync() {
       sliders.p.inp.max = st.N; sliders.del.inp.max = st.N;
       Object.keys(sliders).forEach(function (k) {
         sliders[k].inp.value = st[k];
-        sliders[k].val.textContent = (k === "p" ? "token " : "") + fmtTokFull(st[k]) + (k === "p" ? "" : " tokens");
+        sliders[k].val.textContent = (k === "p" ? "token " : "") + num(st[k]) + (k === "p" ? "" : " tokens");
       });
-      Object.keys(pbtn).forEach(function (k) {
-        var pr = PRESETS.filter(function (x) { return x.key === k; })[0].st;
-        pbtn[k].classList.toggle("on", Object.keys(pr).every(function (x) { return pr[x] === st[x]; }));
+      PRESETS.forEach(function (pr) {
+        pbtn[pr.key].classList.toggle("on", Object.keys(pr.st).every(function (x) { return pr.st[x] === st[x]; }));
       });
       draw();
     }
 
-    function showTip(evt, html) {
-      tip.innerHTML = html; tip.style.display = "block";
-      var r = box.getBoundingClientRect();
-      var x = evt.clientX - r.left + 14, y = evt.clientY - r.top + 14;
-      if (x + 260 > r.width) x = evt.clientX - r.left - 270;
-      tip.style.left = x + "px"; tip.style.top = y + "px";
-    }
-    function hideTip() { tip.style.display = "none"; }
     function hover(n, html) {
-      n.addEventListener("mousemove", function (e) { showTip(e, html); });
-      n.addEventListener("mouseleave", hideTip);
+      n.addEventListener("mousemove", function (e) {
+        tip.innerHTML = html; tip.style.display = "block";
+        var r = box.getBoundingClientRect(), x = e.clientX - r.left + 14, y = e.clientY - r.top + 14;
+        if (x + 250 > r.width) x = e.clientX - r.left - 260;
+        tip.style.left = x + "px"; tip.style.top = y + "px";
+      });
+      n.addEventListener("mouseleave", function () { tip.style.display = "none"; });
     }
-
-    function text(x, y, s, cls, anchor) {
-      var t = sv("text", { x: x, y: y, class: cls || "fs-t", "text-anchor": anchor || "start" }, svg);
+    function text(svg, x, y, s, cls, anchor) {
+      var t = sv("text", { x: x, y: y, class: cls || "", "text-anchor": anchor || "start" }, svg);
       t.textContent = s; return t;
     }
 
     function draw() {
-      var t = turn(st);
-      while (svg.firstChild) svg.removeChild(svg.firstChild);
-      var defs = sv("defs", {}, svg);
-      var pat = sv("pattern", { id: "fs-hatch", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+      var t = model(st);
+      // ---------------- token strips
+      while (strips.firstChild) strips.removeChild(strips.firstChild);
+      var defs = sv("defs", {}, strips);
+      var pat = sv("pattern", { id: "fs-hatch-" + mode, width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
       sv("rect", { width: 6, height: 6, fill: "#f6dbe3" }, pat);
       sv("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: COL.removed, "stroke-width": 2.2 }, pat);
+      var hatch = "url(#fs-hatch-" + mode + ")";
 
-      // ---------- token strips (shared token scale)
-      var maxTok = Math.max(t.N, t.P + G);
-      var sx = function (tok) { return LBL + BAR * tok / maxTok; };
-      var y = 22;
-      text(LBL, 12, "TOKENS", "fs-cap");
-      function strip(label, sub, segs) {
-        text(LBL - 12, y + 12, label, "fs-lane", "end");
-        if (sub) text(LBL - 12, y + 25, sub, "fs-lane-sub", "end");
+      var lanes = [{ label: "before the edit", segs: [
+        { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "cached from earlier turns" },
+        { n: t.del, fill: hatch, tag: "B", name: "B", note: "replaced by the edit" },
+        { n: t.C, fill: COL.cached, tag: "C", name: "C", note: "cached from earlier turns" }] }];
+      var out = { n: G, fill: COL.gen, tag: "out", dark: true, name: "response", note: "generated" };
+      if (mode === "standard") {
+        lanes.push({ label: "append only", sub: "no edit", segs: [
+          { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
+          { n: t.del, fill: COL.cached, tag: "B", name: "B", note: "kept, reused from the prefix cache" },
+          { n: t.C, fill: COL.cached, tag: "C", name: "C", note: "reused from the prefix cache" },
+          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, appended at the end", note: "processed" }, out] });
+        lanes.push({ label: "with the edit", segs: [
+          { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
+          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "processed" },
+          { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "processed again: the prefix cache stops at the first changed token" }, out] });
+      } else {
+        lanes.push({ label: "prefix caching", segs: [
+          { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
+          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "processed" },
+          { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "processed again: the prefix cache stops at the first changed token" }, out] });
+        lanes.push({ label: "+ Suffix Cache Reuse", segs: [
+          { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
+          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "processed" },
+          { n: t.C, fill: COL.reused, tag: "C", dark: true, name: "C, unchanged", note: "cache relocated to its new positions instead of recomputed" }, out] });
+      }
+      var maxTok = Math.max.apply(null, lanes.map(function (l) { return l.segs.reduce(function (a, s) { return a + Math.max(0, s.n); }, 0); }));
+      var sx = function (k) { return LBL + BAR * k / maxTok; };
+      var y = 4;
+      text(strips, LBL, y + 8, "TOKENS OF THE TURN", "fs-cap");
+      y += 18;
+      lanes.forEach(function (l) {
+        text(strips, LBL - 12, y + 13, l.label, "fs-lane", "end");
+        if (l.sub) text(strips, LBL - 12, y + 26, l.sub, "fs-lane-sub", "end");
         var x = 0;
-        segs.forEach(function (s) {
+        l.segs.forEach(function (s) {
           if (s.n <= 0) return;
-          var r = sv("rect", { x: sx(x), y: y, width: Math.max(0.5, sx(x + s.n) - sx(x) - 1), height: 18, rx: 2, fill: s.fill }, svg);
-          hover(r, "<b>" + s.name + "</b><br>" + fmtTokFull(s.n) + " tokens" + (s.note ? "<br><span>" + s.note + "</span>" : ""));
-          if (sx(x + s.n) - sx(x) > 26) {
-            var lt = text((sx(x) + sx(x + s.n)) / 2, y + 13, s.tag, s.dark ? "fs-seg fs-seg-dark" : "fs-seg", "middle");
+          var r = sv("rect", { x: sx(x), y: y, width: Math.max(0.6, sx(x + s.n) - sx(x) - 1), height: 20, rx: 2, fill: s.fill }, strips);
+          hover(r, "<b>" + s.name + "</b> · " + num(s.n) + " tokens<br><span>" + s.note + "</span>");
+          if (sx(x + s.n) - sx(x) > 24) {
+            var lt = text(strips, (sx(x) + sx(x + s.n)) / 2, y + 14, s.tag, s.dark ? "fs-seg fs-seg-dark" : "fs-seg", "middle");
             lt.style.pointerEvents = "none";
           }
           x += s.n;
         });
-        y += 34;
+        y += 36;
+      });
+      var lx = LBL, ly = y;
+      var legend = [["cached", COL.cached], ["processed", COL.prefill]];
+      if (mode === "scr") legend.push(["reused by SCR", COL.reused]);
+      legend.push(["generated", COL.gen], ["replaced", hatch]);
+      legend.forEach(function (g) {
+        sv("rect", { x: lx, y: ly, width: 11, height: 11, rx: 2, fill: g[1] }, strips);
+        var tt = text(strips, lx + 16, ly + 10, g[0], "fs-leg");
+        lx += 16 + tt.getComputedTextLength() + 16;
+      });
+      strips.setAttribute("viewBox", "0 0 " + W + " " + (ly + 16));
+
+      // ---------------- FLOPs bars
+      while (bars.firstChild) bars.removeChild(bars.firstChild);
+      var items = mode === "standard"
+        ? [{ name: "append only", c: t.app, color: "#9fb2c9" }, { name: "with the edit", c: t.std, color: "#e39bb0" }]
+        : [{ name: "prefix caching", c: t.std, color: "#e39bb0" }, { name: "+ SCR", c: t.scr, color: "#3d9a50" }];
+      var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40, colW = (BW - x0 - 8) / items.length;
+      var maxV = Math.max(t.none.total, items[0].c.total, items[1].c.total) * 1.04;
+      var yv = function (v) { return top + plotH * (1 - v / maxV); };
+      text(bars, 0, 12, "PREFIX-REUSE FLOPS (×10¹⁴)", "fs-cap");
+      var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
+      for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
+        var yy = yv(v * 1e14);
+        sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
+        text(bars, x0 - 6, yy + 4, (step < 1 ? v.toFixed(1) : String(Math.round(v))), "fs-tick", "end");
       }
-      strip("before the edit", null, [
-        { n: t.p, fill: COL.cached, tag: "A", name: "A, before the edit", note: "in the cache from earlier turns" },
-        { n: t.del, fill: "url(#fs-hatch)", tag: "B", name: "B, replaced by the edit" },
-        { n: t.C, fill: COL.cached, tag: "C", name: "C, unchanged text after the edit", note: "in the cache from earlier turns" }
-      ]);
-      var lanes = [
-        { key: "none", label: "no cache", segs: [
-          { n: t.p, fill: COL.prefill, tag: "A", name: "A", note: "processed" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, inserted by the edit", note: "processed" },
-          { n: t.C, fill: COL.prefill, tag: "C", name: "C", note: "processed" },
-          { n: G, fill: COL.gen, tag: "out", dark: true, name: "response", note: "generated" }] },
-        { key: "std", label: "prefix caching", sub: "standard serving", segs: [
-          { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, inserted by the edit", note: "processed" },
-          { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged but after the edit", note: "processed again: the prefix cache stops at the first changed token" },
-          { n: G, fill: COL.gen, tag: "out", dark: true, name: "response", note: "generated" }] },
-        { key: "scr", label: "Suffix Cache Reuse", segs: [
-          { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, inserted by the edit", note: "processed" },
-          { n: t.C, fill: COL.reused, tag: "C", dark: true, name: "C, unchanged text after the edit", note: "cache relocated to its new positions instead of recomputed" },
-          { n: G, fill: COL.gen, tag: "out", dark: true, name: "response", note: "generated" }] }
-      ];
-      lanes.forEach(function (l) { strip(l.label, l.sub, l.segs); });
-
-      // legend for strips
-      var lx = LBL, ly = y + 2;
-      [["in the cache", COL.cached], ["processed", COL.prefill], ["reused by SCR", COL.reused], ["generated", COL.gen], ["replaced", "url(#fs-hatch)"]].forEach(function (g) {
-        sv("rect", { x: lx, y: ly, width: 11, height: 11, rx: 2, fill: g[1] }, svg);
-        var tt = text(lx + 16, ly + 10, g[0], "fs-leg");
-        lx += 16 + tt.getComputedTextLength() + 18;
+      var yn = yv(t.none.total);
+      sv("line", { x1: x0, x2: BW - 4, y1: yn, y2: yn, class: "fs-ref" }, bars);
+      text(bars, BW - 4, yn - 5, "no cache " + e14(t.none.total), "fs-ref-t", "end");
+      items.forEach(function (it, i) {
+        var cx = x0 + colW * (i + 0.5), bw = Math.min(54, colW * 0.56), yt = yv(it.c.total);
+        var r = sv("rect", { x: cx - bw / 2, y: yt, width: bw, height: top + plotH - yt, rx: 3, fill: it.color }, bars);
+        hover(r, "<b>" + it.name + "</b> · " + e14(it.c.total) + " × 10¹⁴ FLOPs<br><span>" + num(it.c.proc) + " prompt tokens processed + " + G +
+          " generated<br>linear layers " + e14(it.c.lin) + " · attention " + e14(it.c.att) + "</span>");
+        text(bars, cx, yt - 6, e14(it.c.total), "fs-bar-v", "middle");
+        text(bars, cx, top + plotH + 16, it.name, "fs-bar-l", "middle");
       });
+      var a = items[0].c.total, b = items[1].c.total;
+      var ratio = mode === "standard" ? b / a : a / b;
+      text(bars, x0 + (BW - x0) / 2, H - 4, mode === "standard"
+        ? "the edit costs " + ratio.toFixed(1) + "× appending"
+        : "SCR: " + ratio.toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
+      bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
 
-      // ---------- FLOPs bars (shared FLOPs scale)
-      y = ly + 34;
-      text(LBL, y, "FLOPS OF THE TURN", "fs-cap");
-      y += 10;
-      var maxF = t.none.total;
-      var fx = function (f) { return LBL + BAR * f / maxF; };
-      lanes.forEach(function (l) {
-        var c = t[l.key];
-        text(LBL - 12, y + 15, l.label, "fs-lane", "end");
-        var x = 0;
-        OPS.forEach(function (o) {
-          var v = c[o.key];
-          var r = sv("rect", { x: fx(x), y: y, width: Math.max(0, fx(x + v) - fx(x) - (v > 0 ? 1 : 0)), height: 22, rx: 2, fill: o.color }, svg);
-          hover(r, "<b>" + o.label + "</b><br>" + e14(v) + " × 10¹⁴ FLOPs<br><span>" + (100 * v / c.total).toFixed(0) + "% of this turn</span>");
-          x += v;
-        });
-        if (maxF - c.total > maxF * 0.002) {
-          var ra = sv("rect", { x: fx(c.total), y: y, width: fx(maxF) - fx(c.total), height: 22, rx: 2, fill: COL.avoided, class: "fs-avoided" }, svg);
-          hover(ra, "<b>avoided by caching</b><br>" + e14(maxF - c.total) + " × 10¹⁴ FLOPs");
-        }
-        var tv = text(LBL + BAR + 10, y + 11, e14(c.total) + " × 10¹⁴", "fs-num");
-        text(LBL + BAR + 10, y + 24, l.key === "none" ? "baseline" : (100 * (1 - c.total / maxF)).toFixed(0) + "% avoided", "fs-num-sub");
-        y += 32;
-      });
-      var lx2 = LBL, ly2 = y + 4;
-      OPS.concat([{ label: "avoided by caching", color: COL.avoided }]).forEach(function (o) {
-        var probe = text(0, -100, o.label, "fs-leg"), w = 16 + probe.getComputedTextLength();
-        svg.removeChild(probe);
-        if (lx2 + w > W - 4) { lx2 = LBL; ly2 += 18; }
-        sv("rect", { x: lx2, y: ly2, width: 11, height: 11, rx: 2, fill: o.color, class: o.key ? "" : "fs-avoided" }, svg);
-        text(lx2 + 16, ly2 + 10, o.label, "fs-leg");
-        lx2 += w + 16;
-      });
-      svg.setAttribute("viewBox", "0 0 " + W + " " + (ly2 + 18));
-
-      // ---------- stats line
-      var recomputed = t.C;
-      var ratio = t.std.total / Math.max(1, t.scr.total);
-      var vsApp = t.std.total / t.app.total;
-      stats.innerHTML =
-        "prompt <b>" + fmtTokFull(t.P) + "</b> tokens · standard serving recomputes <b>" + fmtTokFull(recomputed) + "</b> unchanged tokens" +
-        " · standard <b>" + e14(t.std.total) + "</b> vs SCR <b>" + e14(t.scr.total) + "</b> × 10¹⁴" +
-        (t.std.total > t.scr.total * 1.0005 ? " (<b>" + ratio.toFixed(1) + "×</b> less)" : "") +
-        " · under standard serving, this edit costs <b>" + vsApp.toFixed(1) + "×</b> as much as appending B′ at the end";
+      stats.innerHTML = mode === "standard"
+        ? "prompt <b>" + num(t.P) + "</b> tokens · the edit makes the server process <b>" + num(t.C) + "</b> unchanged tokens again"
+        : "SCR reuses the cache of <b>" + num(t.C) + "</b> unchanged tokens and processes only B′ (<b>" + num(t.ins) + "</b> tokens)";
     }
 
     sync();
-    window.addEventListener("resize", function () { draw(); });
   }
 
   function init() { document.querySelectorAll(".flops-sim").forEach(mount); }
