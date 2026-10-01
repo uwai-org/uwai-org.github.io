@@ -33,7 +33,9 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 
 **Resources:** [📄 Paper](https://arxiv.org/abs/2609.37725) · [👨‍💻 GitHub](https://github.com/facebookresearch/context-language-models) · [🐦 Tweet](#)
 
-When we measure the cost of Context Language Models (CLMs), we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Model servers such as vLLM and SGLang reuse the cached states of a prompt prefix that matches an earlier request, but every token from the first prefix mismatch onward must be prefilled again. This is exactly what happens after an edit in the middle of the context.
+When we measure the cost of Context Language Models (CLMs),[^clm] we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Model servers such as vLLM and SGLang reuse the cached states of a prompt prefix that matches an earlier request, but every token from the first prefix mismatch onward must be prefilled again. This is exactly what happens after an edit in the middle of the context.
+
+[^clm]: Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, and Pang Wei Koh. "[Context Language Models](https://arxiv.org/abs/2609.37725)." arXiv preprint arXiv:2609.37725, 2026.
 
 ![Standard serving after an edit replaces B with B′. The prefix cache covers A; B′ and all of the unchanged C are prefilled again.]({{ '/assets/img/clm/standard-serving.png' | relative_url }})
 
