@@ -32,6 +32,10 @@ September 28, 2026
 ::::
 :::::
 
+:::: {.scr-tagline}
+“How to stop KV cache from crying when they’re no longer in an append-only relationship with the context”
+::::
+
 ::: {.scr-teaser}
 **Suffix Cache Reuse.** After an edit replaces *B* with a shorter *B′*, only *B′* is prefilled. The cache of *A* is reused as a prefix, and the cache of the unchanged *C* moves to its new positions.
 :::
