@@ -86,11 +86,6 @@
     block(svg, xB, xC2, y2, bh, PINK, "B′");
     block(svg, xC2, xE2, y2, bh, BLUE, "C");
     // Suffix Cache Reuse: green outline around the relocated C block and an SCR tag in its corner (Rulin 2026-10-01)
-    var GREEN = "#3d9a50";
-    sv("rect", { x: xC2 - 1, y: y2 - 2.5, width: xE2 - xC2 + 2, height: bh + 5, rx: 6, fill: "none",
-      stroke: GREEN, "stroke-width": 1.8 }, svg);
-    var tg = text(svg, xE2 + 9, y2 + bh / 2 + 5, "SCR", "st-tag");   // green label outside, to the right of the block
-    tg.setAttribute("fill", GREEN);
 
     text(svg, labW, y1 + bh / 2 + 5, narrow ? "before" : "before the edit", "st-row", "end");
     text(svg, labW, y2 + bh / 2 + 5, narrow ? "after" : "after the edit", "st-row", "end");
@@ -99,7 +94,7 @@
     var lines = Math.max(
       bracket(svg, x0, xB, yl, "prefix cache reused", BLUE),
       bracket(svg, xB, xC2, yl, "prefill", PINK),
-      bracket(svg, xC2, xE2, yl, "suffix cache reused", BLUE));
+      bracket(svg, xC2, xE2, yl, "suffix cache reused (ours)", BLUE));
     var H = Math.ceil(yl + 20 + (lines - 1) * 16);
     svg.setAttribute("viewBox", "0 0 " + W + " " + H);
     svg.setAttribute("height", H);

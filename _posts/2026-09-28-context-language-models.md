@@ -77,7 +77,7 @@ $$
 + \underbrace{\mathrm{FLOPs}_{\text{decode}}\big(\text{generated tokens}\big)}_{\text{new output tokens}}
 $$
 
-**By default, we use this as an efficiency metric for CLMs under standard serving, so when we say CLMs are cheaper than the baselines, that already includes the lower cache hit rate their edits cause.** The visualization below shows how the Prefix Reuse FLOPs of one turn change with an edit.
+**By default, we use this metric to measure CLM efficiency under standard serving. Thus, when we say CLMs are cheaper than the baselines, we already account for the lower cache hit rate caused by context edits.** The visualization below shows how an edit affects the Prefix-Reuse FLOPs of a single turn.
 
 ::: {.flops-sim mode="standard"}
 **Prefix Reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bar splits the Prefix Reuse FLOPs of the turn into the prefill of B′, the re-prefill of the unchanged C, and decoding; the no-cache cost is noted above the bar.
