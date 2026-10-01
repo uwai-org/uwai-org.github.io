@@ -63,6 +63,10 @@ When we measure the cost of Context Language Models (CLMs),[^clm] we account for
 [[compacted]{.tok} [B]{.tok} [*B′* · prefill]{.tok-seg-label}]{.tok-seg .prefill .first-change}
 [[this]{.tok} [is]{.tok} [sentence]{.tok} [C]{.tok} [*C* · re-prefill]{.tok-seg-label}]{.tok-seg .prefill}
 :::
+
+::: {.tok-legend}
+[ ]{.sw .sw-cached} served from the prefix cache [ ]{.sw .sw-prefill} prefilled: the edited *B′* and the unchanged *C* after it [×]{.sw-x} first prefix mismatch
+:::
 ::::
 
 To account for this, we measure theoretical inference FLOPs with a metric we call **Prefix Reuse FLOPs**:
