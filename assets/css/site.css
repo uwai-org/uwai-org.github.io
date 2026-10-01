@@ -618,9 +618,9 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 }
 .fs-main {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 7.5fr) minmax(0, 2.7fr);   /* strips a little wider (Rulin 2026-10-01) */
   gap: 22px;
-  align-items: start;
+  align-items: center;   /* strips sit vertically centred against the taller bar chart */
 }
 .fs-right { border-left: 1px solid var(--color-border); padding-left: 18px; }
 @media (max-width: 720px) {
