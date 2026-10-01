@@ -101,9 +101,7 @@ Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which k
 
 ## Results on BrowseComp-Plus
 
-::: {.clm-chart chart="scr"}
-**Suffix Cache Reuse on BrowseComp-Plus with a Qwen3.6-27B CLM.** All 830 questions were served both ways. Left: compute per question, split into prefill and decode, with accuracy under each bar. Right: where the prompt tokens came from, over all turns or only the turns right after a context edit.
-:::
+![Suffix Cache Reuse on BrowseComp-Plus with a Qwen3.6-27B CLM. All 830 questions were served both ways. Left: task accuracy. Middle: compute per question, split into prefill and decode. Right: where the prompt tokens came from, over all turns and over the turns right after a context edit.]({{ '/assets/img/clm/scr-bcp830-results.png' | relative_url }})
 
 Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question. On the turns right after an edit, SCR serves an extra 28.2% of the prompt from relocated cache that standard serving would have recomputed. CLMs were already cheaper than the baselines under standard serving, through better context management alone; SCR brings their serving cost down to 65% of that.
 
