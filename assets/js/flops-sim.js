@@ -6,8 +6,7 @@
  * then the model generates a G-token response. FLOPs use the Qwen3.6-27B constants from the
  * paper's Appendix C: linear layers cost the same per processed token, and the 16
  * full-attention layers add a cost per query-key pair.
- *   mode "standard": the turn with the edit vs. the same turn appending B' at the end instead,
- *                    both under prefix caching.
+ *   mode "standard": the turn with the edit, with no cache vs. under prefix caching.
  *   mode "scr":      the turn with the edit under prefix caching vs. prefix caching + SCR.
  */
 (function () {
@@ -54,9 +53,8 @@
       N: N, p: p, del: del, ins: ins, C: C, P: P,
       none: flops(P, 0.5 * P * P, P),
       std: flops(P - p, 0.5 * (P * P - p * p), P),
-      scr: flops(ins, ins * p + 0.5 * ins * ins, P),
-      app: flops(ins, 0.5 * ((N + ins) * (N + ins) - N * N), N + ins)
-    };
+      scr: flops(ins, ins * p + 0.5 * ins * ins, P)
+          };
   }
 
   function mount(node) {
@@ -153,12 +151,7 @@
         { n: t.C, fill: COL.cached, tag: "C", name: "C", note: "cached from earlier turns" }] }];
       var out = { n: G, fill: COL.gen, tag: "out", dark: true, name: "response", note: "generated" };
       if (mode === "standard") {
-        lanes.push({ label: "append only", sub: "no edit", segs: [
-          { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.del, fill: COL.cached, tag: "B", name: "B", note: "kept, reused from the prefix cache" },
-          { n: t.C, fill: COL.cached, tag: "C", name: "C", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, appended at the end", note: "processed" }, out] });
-        lanes.push({ label: "with the edit", segs: [
+        lanes.push({ label: "after the edit", sub: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
           { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "processed" },
           { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "processed again: the prefix cache stops at the first changed token" }, out] });
@@ -207,7 +200,7 @@
       // ---------------- FLOPs bars
       while (bars.firstChild) bars.removeChild(bars.firstChild);
       var items = mode === "standard"
-        ? [{ name: "append only", c: t.app, color: "#9fb2c9" }, { name: "with the edit", c: t.std, color: "#e39bb0" }]
+        ? [{ name: "no cache", c: t.none, color: "#b8b3a8" }, { name: "prefix caching", c: t.std, color: "#e39bb0" }]
         : [{ name: "prefix caching", c: t.std, color: "#e39bb0" }, { name: "+ SCR", c: t.scr, color: "#3d9a50" }];
       var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40, colW = (BW - x0 - 8) / items.length;
       var maxV = Math.max(t.none.total, items[0].c.total, items[1].c.total) * 1.04;
@@ -219,9 +212,11 @@
         sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
         text(bars, x0 - 6, yy + 4, (step < 1 ? v.toFixed(1) : String(Math.round(v))), "fs-tick", "end");
       }
-      var yn = yv(t.none.total);
-      sv("line", { x1: x0, x2: BW - 4, y1: yn, y2: yn, class: "fs-ref" }, bars);
-      text(bars, BW - 4, yn - 5, "no cache " + e14(t.none.total), "fs-ref-t", "end");
+      if (mode === "scr") {
+        var yn = yv(t.none.total);
+        sv("line", { x1: x0, x2: BW - 4, y1: yn, y2: yn, class: "fs-ref" }, bars);
+        text(bars, BW - 4, yn - 5, "no cache " + e14(t.none.total), "fs-ref-t", "end");
+      }
       items.forEach(function (it, i) {
         var cx = x0 + colW * (i + 0.5), bw = Math.min(54, colW * 0.56), yt = yv(it.c.total);
         var r = sv("rect", { x: cx - bw / 2, y: yt, width: bw, height: top + plotH - yt, rx: 3, fill: it.color }, bars);
@@ -231,10 +226,9 @@
         text(bars, cx, top + plotH + 16, it.name, "fs-bar-l", "middle");
       });
       var a = items[0].c.total, b = items[1].c.total;
-      var ratio = mode === "standard" ? b / a : a / b;
       text(bars, x0 + (BW - x0) / 2, H - 4, mode === "standard"
-        ? "the edit costs " + ratio.toFixed(1) + "× appending"
-        : "SCR: " + ratio.toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
+        ? "prefix caching avoids " + (100 * (1 - b / a)).toFixed(0) + "%"
+        : "SCR: " + (a / b).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
       bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
 
       stats.innerHTML = mode === "standard"
