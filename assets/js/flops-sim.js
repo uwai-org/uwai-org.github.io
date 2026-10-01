@@ -150,8 +150,6 @@
       var maxTok = Math.max.apply(null, lanes.map(function (l) { return l.segs.reduce(function (a, s) { return a + Math.max(0, s.n); }, 0); }));
       var sx = function (k) { return LBL + BAR * k / maxTok; };
       var y = 4;
-      text(strips, LBL, y + 8, "TOKENS OF THE TURN", "fs-cap");
-      y += 18;
       // ---- schematic header: [A][B][C] -> [A][B′][C]
       (function () {
         var hx = LBL, hy = y, bh = 18;
