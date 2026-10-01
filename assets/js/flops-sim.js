@@ -278,8 +278,8 @@
         var gh = plotH * cseg.total / maxV;
         var ghost = sv("rect", { x: c2 - bw / 2, y: ytop - gh, width: bw, height: gh, fill: "rgba(61,154,80,0.10)", stroke: COL.reused, "stroke-width": 1.4, "stroke-dasharray": "4 3" }, bars);
         hover(ghost, "<b>saved by Suffix Cache Reuse</b> · " + e14(cseg.total) + " × 10¹⁴ FLOPs<br><span>the re-prefill of " + num(t.C) + " unchanged tokens; their cache is relocated instead</span>");
-        if (gh > 28) { var g1 = text(bars, c2, ytop - gh / 2 - 2, "saved", "fs-seg-v", "middle"); g1.setAttribute("fill", COL.reused); var g2 = text(bars, c2, ytop - gh / 2 + 11, "by SCR", "fs-seg-v", "middle"); g2.setAttribute("fill", COL.reused); }
-        text(bars, c2, ytop - 6, e14(ktot), "fs-bar-v", "middle");
+        if (gh > 34) { var g1 = text(bars, c2, ytop - gh / 2 - 2, "saved", "fs-seg-v", "middle"); g1.setAttribute("fill", COL.reused); var g2 = text(bars, c2, ytop - gh / 2 + 11, "by SCR", "fs-seg-v", "middle"); g2.setAttribute("fill", COL.reused); }
+        text(bars, c2, ytop - gh - 6, e14(ktot), "fs-bar-v", "middle");   // above the dashed ghost so it never collides with its label
         text(bars, c2, base + 16, "+ SCR", "fs-bar-l", "middle");
         text(bars, x0 + (BW - x0) / 2, H - 20, "SCR: " + (tot / ktot).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
         text(bars, x0 + (BW - x0) / 2, H - 6, "no cache: " + e14(t.none.total), "fs-ref-t", "middle");
