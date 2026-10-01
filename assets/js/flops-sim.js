@@ -16,7 +16,7 @@
   var PER_PAIR = 3.93216e5;                    // full-attention query-key pair
   var G = 500;                                 // response tokens
 
-  var COL = { cached: "#d8d3c7", prefill: "#e39bb0", reused: "#3d9a50", gen: "#0668E1", removed: "#e39bb0" };
+  var COL = { cached: "#d8d3c7", prefill: "#e39bb0", edit: "#c23a63", reused: "#3d9a50", gen: "#0668E1", removed: "#e39bb0" };
 
   var PRESETS = [
     { key: "mid", label: "edit in the middle", st: { N: 20000, p: 10000, del: 1000, ins: 1000 } },
@@ -153,16 +153,16 @@
       if (mode === "standard") {
         lanes.push({ label: "after the edit", sub: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "prefilled" },
+          { n: t.ins, fill: COL.edit, tag: "B′", dark: true, name: "B′, written by the edit", note: "prefilled" },
           { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "re-prefilled: the prefix cache stops at the first changed token" }, out] });
       } else {
         lanes.push({ label: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "prefilled" },
+          { n: t.ins, fill: COL.edit, tag: "B′", dark: true, name: "B′, written by the edit", note: "prefilled" },
           { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "re-prefilled: the prefix cache stops at the first changed token" }, out] });
         lanes.push({ label: "+ Suffix Cache Reuse", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "prefilled" },
+          { n: t.ins, fill: COL.edit, tag: "B′", dark: true, name: "B′, written by the edit", note: "prefilled" },
           { n: t.C, fill: COL.reused, tag: "C", dark: true, name: "C, unchanged", note: "cache relocated to its new positions instead of recomputed" }, out] });
       }
       var maxTok = Math.max.apply(null, lanes.map(function (l) { return l.segs.reduce(function (a, s) { return a + Math.max(0, s.n); }, 0); }));
@@ -187,7 +187,7 @@
         y += 36;
       });
       var lx = LBL, ly = y;
-      var legend = [["cached", COL.cached], ["prefilled / re-prefilled", COL.prefill]];
+      var legend = [["cached", COL.cached], ["B′ prefilled", COL.edit], ["C re-prefilled", COL.prefill]];
       if (mode === "scr") legend.push(["reused by SCR", COL.reused]);
       legend.push(["generated", COL.gen], ["replaced", hatch]);
       legend.forEach(function (g) {
@@ -203,7 +203,7 @@
       function segsOf(t) {
         var segs = [
           { tag: "decode", name: "response, generated", tok: G, lin: PER_TOKEN * G, att: PER_PAIR * (G * t.P + 0.5 * G * G), fill: COL.gen, dark: true },
-          { tag: "B′ prefill", name: "B′, written by the edit: prefilled", tok: t.ins, lin: PER_TOKEN * t.ins, att: PER_PAIR * (t.ins * t.p + 0.5 * t.ins * t.ins), fill: "#c23a63", dark: true },
+          { tag: "B′ prefill", name: "B′, written by the edit: prefilled", tok: t.ins, lin: PER_TOKEN * t.ins, att: PER_PAIR * (t.ins * t.p + 0.5 * t.ins * t.ins), fill: COL.edit, dark: true },
           { tag: "C re-prefill", name: "C, unchanged: prefilled again", tok: t.C, lin: PER_TOKEN * t.C, att: PER_PAIR * 0.5 * (t.P * t.P - (t.p + t.ins) * (t.p + t.ins)), fill: COL.prefill }
         ];
         segs.forEach(function (s) { s.total = s.lin + s.att; });
