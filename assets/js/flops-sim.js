@@ -6,7 +6,7 @@
  * then the model generates a G-token response. FLOPs use the Qwen3.6-27B constants from the
  * paper's Appendix C: linear layers cost the same per processed token, and the 16
  * full-attention layers add a cost per query-key pair.
- *   mode "standard": the turn with the edit, with no cache vs. under prefix caching.
+ *   mode "standard": the turn with the edit under prefix caching.
  *   mode "scr":      the turn with the edit under prefix caching vs. prefix caching + SCR.
  */
 (function () {
@@ -238,7 +238,6 @@
           sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
           text(bars, x0 - 6, yy + 4, (step < 1 ? v.toFixed(1) : String(Math.round(v))), "fs-tick", "end");
         }
-        text(bars, BW - 4, 27, "no cache " + e14(t.none.total), "fs-ref-t", "end");
         var cx = x0 + 62, bw = 60;
         stackBar(bars, segs, cx, bw, top + plotH, plotH, maxV, true, 1e9);
         text(bars, cx, yv(tot) - 6, e14(tot), "fs-bar-v", "middle");
@@ -280,8 +279,7 @@
         if (gh > 34) { var g1 = text(bars, c2, ytop - gh / 2 - 2, "saved", "fs-seg-v", "middle"); g1.setAttribute("fill", COL.reused); var g2 = text(bars, c2, ytop - gh / 2 + 11, "by SCR", "fs-seg-v", "middle"); g2.setAttribute("fill", COL.reused); }
         text(bars, c2, ytop - gh - 6, e14(ktot), "fs-bar-v", "middle");   // above the dashed ghost so it never collides with its label
         text(bars, c2, base + 16, "+ SCR", "fs-bar-l", "middle");
-        text(bars, x0 + (BW - x0) / 2, H - 20, "SCR: " + (tot / ktot).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
-        text(bars, x0 + (BW - x0) / 2, H - 6, "no cache: " + e14(t.none.total), "fs-ref-t", "middle");
+        text(bars, x0 + (BW - x0) / 2, H - 8, "SCR: " + (tot / ktot).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
         bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
       }
     }
