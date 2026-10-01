@@ -738,6 +738,7 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .st-svg .st-row { font-family: var(--font-family-prose); font-style: italic; font-size: 15px; fill: var(--color-text-secondary); }
 .st-svg .st-band { font-size: 13px; font-style: italic; }
 .st-svg .st-lab { font-size: 13.5px; }
+.st-svg .st-tag { font-family: var(--font-family-sans); font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-anchor: middle; }
 .st-svg.narrow .st-letter { font-size: 15px; }
 .st-svg.narrow .st-row { font-size: 13px; }
 .st-svg.narrow .st-band { font-size: 11.5px; }
