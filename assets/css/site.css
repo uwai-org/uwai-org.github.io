@@ -319,6 +319,15 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .post-hero .post-date p {
   margin: 0;
 }
+.post-hero .post-subtitle {
+  margin: calc(-0.4 * var(--line-height)) auto calc(0.6 * var(--line-height));
+  font-family: var(--font-family-sans);
+  font-size: clamp(11px, 2.85vw, 21px);
+  line-height: 1.3;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+.post-hero .post-subtitle p { margin: 0; }
 .post-hero .post-date {
   font-family: var(--font-family-sans);
   font-size: 14px;
@@ -685,3 +694,5 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .fs-slider .fs-lab { margin: 0; }
 .fs-slider input { width: 100%; accent-color: #0668E1; }
 .fs-val { font-family: var(--font-family-code); font-size: 12px; color: var(--color-text); white-space: nowrap; }
+
+.katex-display { overflow-x: auto; overflow-y: hidden; }
