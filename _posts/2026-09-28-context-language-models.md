@@ -82,7 +82,7 @@ By default, we use this metric to measure CLM efficiency under standard serving.
 [^pareto]: For example, in these performance-efficiency Pareto plots, we used prefix-reuse FLOPs with standard serving. ![Performance-efficiency Pareto plots from the paper: accuracy against prefix-reuse PFLOPs per question on BrowseComp-Plus, TerminalBench 2.1 and TBLite.]({{ '/assets/img/clm/pareto_q36_main.png' | relative_url }}){.sn-fig}
 
 ::: {.flops-sim mode="standard"}
-**Prefix Reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bar splits the Prefix Reuse FLOPs of the turn into the prefill of B′, the re-prefill of the unchanged C, and decoding.
+**Prefix Reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bar splits the Prefix Reuse FLOPs of the turn into the prefill of [*B′*]{.ctx-e}, the re-prefill of the unchanged [*C*]{.ctx-e}, and decoding.
 :::
 
 The hit rate does drop with in-the-middle edits and incurs re-prefilling of the unchanged C.[^think] In our experiments with a Qwen3.6-27B CLM on BrowseComp-Plus, standard SGLang serves 72.9% of all prompt tokens from its prefix cache, but only 24.2% on the turns right after a context edit. The rest of an edited turn is prefilled again, including the large part of the context that the edit left unchanged.
@@ -120,10 +120,10 @@ Standard serving versus Suffix Cache Reuse after an edit replaces B with B′. S
 Say the context is [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap}, and an edit replaces [*B*]{.ctx-g} with [*B′*]{.ctx-e}. Standard serving reuses the cache for [*A*]{.ctx-o} and then stops, because a prefix cache only matches up to the first changed token: [*B′*]{.ctx-e} and all of [*C*]{.ctx-e} are prefilled again, even though [*C*]{.ctx-e} did not change. **Suffix Cache Reuse (SCR)** keeps the cached states for [*C*]{.ctx-r} instead of throwing them away. When the next prompt arrives, SCR compares it with the previous prompt of the same session to find the spans that survived the edit, shifts their rotary position encodings to their new positions, and splices them in after [*B′*]{.ctx-e}. Only [*B′*]{.ctx-e} and newly appended tokens are prefilled. Below is an interactive visualization of SCR serving compared with prefix-reuse-only serving.
 
 ::: {.flops-sim mode="scr"}
-**Adding Suffix Cache Reuse on top of prefix caching.** The same turn as in the first figure; the bars compare prefix caching with and without SCR, and the dashed green outline is the re-prefill of C that SCR removes. SCR is counted with B′ prefilled through every layer and C relocated as one span.
+**Adding Suffix Cache Reuse on top of prefix caching.** The same turn as in the first figure; the bars compare prefix caching with and without SCR, and the dashed green outline is the re-prefill of [*C*]{.ctx-e} that SCR removes. SCR is counted with [*B′*]{.ctx-e} prefilled through every layer and [*C*]{.ctx-r} relocated as one span.
 :::
 
-**Technical details.** This is an approximation: C's cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and processes the rest normally.[^k]
+**Technical details.** SCR is an approximation: [*C*]{.ctx-r}'s cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and processes the rest normally.[^k]
 
 [^k]: In a sensitivity study on 64 BrowseComp-Plus questions, accuracy stays flat for one to 64 relocated spans per edit, while the cache savings mostly saturate by six. SCR is implemented as a patch to SGLang; relocated entries live in session-private cache slots, so the shared prefix cache never holds a moved entry.
 
