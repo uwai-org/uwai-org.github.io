@@ -9,6 +9,7 @@ plotly: true
 scripts:
   - /assets/js/clm-charts.js
   - /assets/js/flops-sim.js
+  - /assets/js/scr-teaser.js
 description: >-
   Context Language Models edit their own context, which breaks prefix caching
   after every edit. Suffix Cache Reuse reuses the cache of the text that
@@ -31,6 +32,10 @@ September 28, 2026
 ::::
 :::::
 
+::: {.scr-teaser}
+**Suffix Cache Reuse.** After an edit replaces *B* with a shorter *B′*, only *B′* is prefilled. The cache of *A* is reused as a prefix, and the cache of the unchanged *C* moves to its new positions.
+:::
+
 ::: {.draft-note}
 Before publishing: confirm author formatting (the TMax post bolds co-first authors; the paper marks none), the publication date, and the missing links in the resources line (arXiv, tweet). Draft notes like this one only show up in local builds; production builds hide them.
 :::
@@ -40,6 +45,20 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 When we measure the cost of Context Language Models (CLMs),[^clm] we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Model servers such as vLLM and SGLang reuse the cached states of a prompt prefix that matches an earlier request, but every token from the first prefix mismatch onward must be prefilled again. This is exactly what happens after an edit in the middle of the context.
 
 [^clm]: Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, and Pang Wei Koh. "[Context Language Models](https://arxiv.org/abs/2609.37725)." arXiv preprint arXiv:2609.37725, 2026.
+
+:::: {.tok-viz}
+::: {.tok-row label="previous prompt, already in the cache"}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [A]{.tok} [*A*]{.tok-seg-label}]{.tok-seg}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [B]{.tok} [*B*]{.tok-seg-label}]{.tok-seg}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [C]{.tok} [*C*]{.tok-seg-label}]{.tok-seg}
+:::
+
+::: {.tok-row label="after rewriting B to B′"}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [A]{.tok} [*A* · prefix cache reused]{.tok-seg-label}]{.tok-seg}
+[[compacted]{.tok} [B]{.tok} [*B′* · prefill]{.tok-seg-label}]{.tok-seg .prefill .first-change}
+[[this]{.tok} [is]{.tok} [sentence]{.tok} [C]{.tok} [*C* · re-prefill]{.tok-seg-label}]{.tok-seg .prefill}
+:::
+::::
 
 ![Standard serving after an edit replaces B with B′. The prefix cache covers A; B′ and all of the unchanged C are prefilled again.]({{ '/assets/img/clm/standard-serving.png' | relative_url }})
 
