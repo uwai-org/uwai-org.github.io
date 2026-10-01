@@ -34,7 +34,7 @@ September 28, 2026
 
 :::: {.scr-tagline}
 “How to stop KV cache from crying\
-when they’re no longer in an append-only relationship with the context” 😉
+when they’re no longer in an append-only relationship with the context” 😉
 ::::
 
 ::: {.scr-teaser}
