@@ -297,8 +297,9 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 }
 .post-hero .byline {
   font-family: var(--font-family-sans);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
   max-width: 40rem;
   margin: 0 auto;
 }
@@ -330,7 +331,7 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .post-hero .post-subtitle p { margin: 0; }
 .post-hero .post-date {
   font-family: var(--font-family-sans);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text-secondary);
   margin-top: 6px;
 }

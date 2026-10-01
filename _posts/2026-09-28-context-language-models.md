@@ -23,7 +23,7 @@ Deep Dive in Efficient Serving for Context Language Models
 ::::
 
 :::: {.byline}
-Rulin Shao & Oscar Yin in collaboration with others in CLM team
+Rulin Shao, Oscar Yin & Nathan Lambert in collaboration with others in CLM team
 ::::
 
 :::: {.post-date}
