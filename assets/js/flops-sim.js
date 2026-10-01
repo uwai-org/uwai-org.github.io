@@ -18,12 +18,6 @@
 
   var COL = { cached: "#d8d3c7", prefill: "#e39bb0", edit: "#c23a63", reused: "#3d9a50", gen: "#0668E1", removed: "#e39bb0" };
 
-  var PRESETS = [
-    { key: "mid", label: "edit in the middle", st: { N: 20000, p: 10000, del: 1000, ins: 1000 } },
-    { key: "start", label: "edit at the start", st: { N: 20000, p: 0, del: 1000, ins: 1000 } },
-    { key: "compact", label: "compact old turns", st: { N: 28000, p: 2000, del: 18000, ins: 1500 } }
-  ];
-
   function el(tag, cls, text) {
     var n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -61,7 +55,7 @@
     var mode = node.getAttribute("data-mode") === "scr" ? "scr" : "standard";
     Array.prototype.forEach.call(node.children, function (c) { if (c.tagName === "P") c.classList.add("chart-caption"); });
 
-    var st = { N: 20000, p: 10000, del: 1000, ins: 1000 };
+    var st = { N: 64000, p: 22250, del: 40000, ins: 2000 };   // default: a large compaction in a 64K context
     var box = el("div", "fs-box");
     node.insertBefore(box, node.firstChild);
 
@@ -77,14 +71,6 @@
     var tip = el("div", "fs-tip"); box.appendChild(tip);
 
     var ctl = el("div", "fs-controls"); box.appendChild(ctl);
-    var row = el("div", "fs-row"); ctl.appendChild(row);
-    row.appendChild(el("span", "fs-lab", "Examples"));
-    var pbtn = {};
-    PRESETS.forEach(function (pr) {
-      var b = el("button", "fs-pill", pr.label); b.type = "button";
-      b.addEventListener("click", function () { Object.keys(pr.st).forEach(function (k) { st[k] = pr.st[k]; }); sync(); });
-      pbtn[pr.key] = b; row.appendChild(b);
-    });
     var grid = el("div", "fs-grid"); ctl.appendChild(grid);
     var sliders = {};
     function slider(key, label, min, max, step) {
@@ -114,9 +100,6 @@
       Object.keys(sliders).forEach(function (k) {
         sliders[k].inp.value = st[k];
         sliders[k].val.textContent = (k === "p" ? "token " : "") + num(st[k]) + (k === "p" ? "" : " tokens");
-      });
-      PRESETS.forEach(function (pr) {
-        pbtn[pr.key].classList.toggle("on", Object.keys(pr.st).every(function (x) { return pr.st[x] === st[x]; }));
       });
       draw();
     }
