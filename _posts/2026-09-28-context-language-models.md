@@ -18,16 +18,6 @@ description: >-
 ::::: {.post-hero}
 <h1 class="title">Suffix Cache Reuse</h1>
 
-:::: {.byline}
-Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang,
-Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis,
-Wen-tau Yih, Luke Zettlemoyer, Pang Wei Koh
-::::
-
-:::: {.affiliations}
-University of Washington · Meta Superintelligence Labs · MIT · Trillium Labs
-::::
-
 :::: {.post-date}
 September 28, 2026
 ::::
