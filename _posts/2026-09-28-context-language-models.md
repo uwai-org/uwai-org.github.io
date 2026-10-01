@@ -125,7 +125,7 @@ Say the context is [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap}, and an 
 
 **Technical details.** SCR is an approximation: [*C*]{.ctx-r}'s cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and processes the rest normally.[^k]
 
-[^k]: In a sensitivity study on 64 BrowseComp-Plus questions, accuracy stays flat for one to 64 relocated spans per edit, while the cache savings mostly saturate by six. SCR is implemented as a patch to SGLang; relocated entries live in session-private cache slots, so the shared prefix cache never holds a moved entry.
+[^k]: More details, such as how the cap on relocated spans is set and what effect it has, are in Appendix B of the paper; the main text uses k = 6.
 
 ![Suffix Cache Reuse for full-attention layers (left) and linear-attention layers (right).]({{ '/assets/img/clm/full-vs-linear-attention-reuse.png' | relative_url }})
 
