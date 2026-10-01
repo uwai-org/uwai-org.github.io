@@ -123,7 +123,7 @@ Say the context is [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap}, and an 
 **Adding Suffix Cache Reuse on top of prefix caching.** The same turn as in the first figure; the bars compare prefix caching with and without SCR, and the dashed green outline is the re-prefill of [*C*]{.ctx-e} that SCR removes. SCR is counted with [*B′*]{.ctx-e} prefilled through every layer and [*C*]{.ctx-r} relocated as one span.
 :::
 
-**Technical details.** SCR is an approximation: [*C*]{.ctx-r}'s cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and processes the rest normally.[^k]
+**Technical details.** For full-attention layers, SCR reuses the cached keys and values of [*C*]{.ctx-r} as they are, except for position: after the edit, [*C*]{.ctx-r} sits earlier by the length difference between [*B*]{.ctx-g} and [*B′*]{.ctx-e}, so SCR re-rotates the rotary position encodings of its cached keys by that offset. Because rotary encodings depend only on position, this rotation is exact and far cheaper than recomputing the entries. SCR is an approximation: [*C*]{.ctx-r}'s cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and processes the rest normally.[^k]
 
 [^k]: More details, such as how the cap on relocated spans is set and what effect it has, are in Appendix B of the paper; the main text uses k = 6.
 
