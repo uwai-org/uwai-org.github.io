@@ -135,7 +135,7 @@ Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which k
 
 ### Results on BrowseComp-Plus
 
-We perform an end-to-end evaluation of SCR on BrowseComp-Plus by simply switching the Qwen3.6-27B endpoint from standard SGLang to our patched SGLang with SCR.[^impl]
+We perform an end-to-end evaluation of SCR on BrowseComp-Plus with the [CLM harness](https://github.com/facebookresearch/context-language-models/tree/main/clm/clm_harness), by simply switching the Qwen3.6-27B endpoint from standard SGLang to our patched SGLang with SCR (Section 5.3 of the [paper](https://arxiv.org/abs/2609.37725)).[^impl]
 
 [^impl]: Our implementation of Suffix Cache Reuse is available at [facebookresearch/context-language-models/suffix_cache_reuse](https://github.com/facebookresearch/context-language-models/tree/main/suffix_cache_reuse).
 
@@ -147,7 +147,7 @@ Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 P
 
 ![Where Suffix Cache Reuse finds reusable cache on BrowseComp-Plus, over all turns and over the turns right after an edit. Qwen3.6-27B, 830 questions.]({{ '/assets/img/clm/scr-strip-savings.png' | relative_url }})
 
-**What is still missed, and why.** We also looked at the unchanged tokens that are still prefilled with SCR. SCR removes most re-prefilling of unchanged suffixes after an edit. Much of the remaining overhead comes from unchanged prefixes that standard SGLang fails to reuse efficiently for hybrid models, because linear-attention states are cached only at request boundaries. This leaves substantial room for improvement: finer-grained recurrent-state checkpoints could increase cache hit rates for both standard prefix caching and SCR. More broadly, serving models with editable context opens many new systems research directions.
+**Improvement space for cache misses.** We also looked at the unchanged tokens that are still prefilled with SCR. SCR removes most re-prefilling of unchanged suffixes after an edit. Much of the remaining overhead comes from unchanged prefixes that standard SGLang fails to reuse efficiently for hybrid models, because linear-attention states are cached only at request boundaries. This leaves substantial room for improvement: finer-grained recurrent-state checkpoints could increase cache hit rates for both standard prefix caching and SCR. More broadly, serving models with editable context opens many new systems research directions.
 
 ![Remaining re-prefill under standard serving and under Suffix Cache Reuse on BrowseComp-Plus, split by why each token was prefilled. Same runs as above.]({{ '/assets/img/clm/scr-prefill-split.png' | relative_url }})
 
