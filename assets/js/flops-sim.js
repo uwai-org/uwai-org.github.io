@@ -145,13 +145,10 @@
       sv("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: COL.removed, "stroke-width": 2.2 }, pat);
       var hatch = "url(#fs-hatch-" + mode + ")";
 
-      var lanes = [{ label: "before the edit", segs: [
-        { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "cached from earlier turns" },
-        { n: t.del, fill: hatch, tag: "B", name: "B", note: "replaced by the edit" },
-        { n: t.C, fill: COL.cached, tag: "C", name: "C", note: "cached from earlier turns" }] }];
+      var lanes = [];   // the edit itself is shown as a schematic header, not as a to-scale lane (Rulin 2026-09-30)
       var out = { n: G, fill: COL.gen, tag: "out", dark: true, name: "response", note: "generated" };
       if (mode === "standard") {
-        lanes.push({ label: "after the edit", sub: "prefix caching", segs: [
+        lanes.push({ label: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
           { n: t.ins, fill: COL.edit, tag: "B′", dark: true, name: "B′, written by the edit", note: "prefilled" },
           { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "re-prefilled: the prefix cache stops at the first changed token" }, out] });
@@ -170,6 +167,25 @@
       var y = 4;
       text(strips, LBL, y + 8, "TOKENS OF THE TURN", "fs-cap");
       y += 18;
+      // ---- schematic header: [A][B][C] -> [A][B′][C]
+      (function () {
+        var hx = LBL, hy = y, bh = 18;
+        text(strips, LBL - 12, hy + 13, "the edit", "fs-lane", "end");
+        function box(w, fill, lab, dark, note) {
+          var r = sv("rect", { x: hx, y: hy, width: w, height: bh, rx: 2, fill: fill }, strips);
+          if (note) hover(r, "<b>" + lab + "</b><br><span>" + note + "</span>");
+          var lt = text(strips, hx + w / 2, hy + 13, lab, dark ? "fs-seg fs-seg-dark" : "fs-seg", "middle"); lt.style.pointerEvents = "none";
+          hx += w + 3;
+        }
+        box(54, COL.cached, "A", false, "unchanged prefix");
+        box(40, hatch, "B", false, "replaced by the edit");
+        box(70, COL.cached, "C", false, "unchanged suffix");
+        text(strips, hx + 12, hy + 13, "→", "fs-lane", "middle"); hx += 28;
+        box(54, COL.cached, "A", false, "unchanged prefix");
+        box(28, COL.edit, "B′", true, "written by the edit");
+        box(70, COL.cached, "C", false, "unchanged suffix, now at new positions");
+      })();
+      y += 32;
       lanes.forEach(function (l) {
         text(strips, LBL - 12, y + 13, l.label, "fs-lane", "end");
         if (l.sub) text(strips, LBL - 12, y + 26, l.sub, "fs-lane-sub", "end");
@@ -189,7 +205,7 @@
       var lx = LBL, ly = y;
       var legend = [["cached", COL.cached], ["B′ prefilled", COL.edit], ["C re-prefilled", COL.prefill]];
       if (mode === "scr") legend.push(["reused by SCR", COL.reused]);
-      legend.push(["generated", COL.gen], ["replaced", hatch]);
+      legend.push(["generated", COL.gen]);
       legend.forEach(function (g) {
         sv("rect", { x: lx, y: ly, width: 11, height: 11, rx: 2, fill: g[1] }, strips);
         var tt = text(strips, lx + 16, ly + 10, g[0], "fs-leg");
