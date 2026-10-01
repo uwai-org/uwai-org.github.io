@@ -40,13 +40,19 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 
 The question we hear most often about Context Language Models is about the KV cache: if the model keeps rewriting its context, doesn't it throw away the server's cache on every edit? It does lose part of it. This post covers how much, what we do about it, and what is still left on the table. For CLMs themselves, see [the paper](https://arxiv.org/abs/2609.37725).
 
-## The cost metric already pays for cache misses
+## Measuring cost with prefix-reuse FLOPs
 
 Model servers such as vLLM and SGLang cache the internal (key-value) states of each request and reuse them when the next request starts with the same tokens. An agent that only appends gets almost its whole history from this cache. Once the agent edits something in the middle of its context, every token after the edit has to be processed again, even the text that didn't change.
 
-That is why every cost number in the paper is in **prefix-reuse FLOPs**: the FLOPs to process every prompt token from the first mismatch with the cached prefix onward, plus the FLOPs to generate new tokens.[^flops] So when we say CLMs are cheaper than the baselines, that is already after paying for the lower cache hit rate their edits cause.
+To compare methods that edit their context with methods that only append, we count the computation a server with prefix caching actually performs, which we call **prefix-reuse FLOPs**. At each turn the prompt has some number of tokens and the model generates a response. The server reuses the longest prefix of leading messages that already appeared in the prompt of an earlier turn, and processes only the rest of the prompt. So an edit invalidates the cached computation from the edited message onward, and a response is processed again when it first shows up in a later prompt, in addition to being generated when it was produced. Each processed or generated token pays a fixed cost for the model's linear layers, and the full-attention layers add a cost that grows with the context length; the cost of a trajectory is the sum over its turns.
 
-[^flops]: For a sense of scale, take one Qwen3.6-27B turn with a 20K-token prompt and a 500-token response. With prefix caching, an append-only turn costs 1.4 × 10¹⁴ FLOPs. An edit in the middle of the context raises that to 5.7 × 10¹⁴, and an edit at the very start to 10.8 × 10¹⁴, 7.7 times the append-only turn.
+![FLOPs of one Qwen3.6-27B turn with a 20K-token prompt and a 500-token response, for three lengths of the reusable prefix. Colors split the FLOPs actually computed by operation; gray shows the additional computation that would be needed without prefix caching. The lengths are chosen for illustration and do not come from a particular run.]({{ '/assets/img/clm/flops-cache-bars.png' | relative_url }})
+
+For a sense of scale, take one Qwen3.6-27B turn with a 20K-token prompt and a 500-token response. When the turn only appends to its context, prefix caching avoids 87% of the computation, and the turn costs 1.41 × 10¹⁴ FLOPs. An edit in the middle of the context leaves 10K reusable tokens and raises the cost to 5.74 × 10¹⁴ FLOPs. An edit at the very start, which here is the same as having no cache at all, costs 10.81 × 10¹⁴ FLOPs, 7.7 times the append-only turn.
+
+## The cost metric already pays for cache misses
+
+Every cost number in the paper is in prefix-reuse FLOPs. So when we say CLMs are cheaper than the baselines, that is already after paying for the lower cache hit rate their edits cause.
 
 The hit rate does drop, and we measured it. With a Qwen3.6-27B CLM on BrowseComp-Plus, standard SGLang serves 72.9% of all prompt tokens from its prefix cache, but only 24.2% on the turns right after a context edit. The rest of an edited turn is processed again, including the large part of the context that the edit left unchanged.
 
