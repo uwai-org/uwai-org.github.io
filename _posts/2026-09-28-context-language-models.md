@@ -91,7 +91,7 @@ The hit rate does drop with in-the-middle edits and incurs re-prefilling of the 
 
 ## Suffix Cache Reuse
 
-Prefix cache reuse has become the tradition in serving engines because context has always been append-only. But can we adapt serving engines for AI's convenience, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient.
+Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But can we adapt serving engines for AI's convenience, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient.
 
 ![Standard serving versus Suffix Cache Reuse after an edit replaces B with B'. Standard serving reuses the cache for A but must process B' and all of C again. Suffix Cache Reuse also reuses the cached states of C.]({{ '/assets/img/clm/suffix-cache-reuse.png' | relative_url }})
 
