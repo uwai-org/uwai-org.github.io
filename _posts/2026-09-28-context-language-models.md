@@ -160,6 +160,10 @@ With standard prefix caching, changing an early part of a prompt forces the serv
 
 We believe cache space can enable more context management opportunities than pure token space. We are excited to see more work along this line.
 
+## Limitations
+
+Suffix Cache Reuse makes more approximations than prefix cache reuse. A reused prefix is exact, since its states depend only on tokens that have not changed. A relocated suffix is not. Its cached states were computed while the old span was still in context, so they may still reflect text the edit removed and miss text it added. The approximation is larger for hybrid models, whose linear-attention layers resume from a recurrent state taken before the edit and see the new span only through the full-attention layers. We cap the number of relocated spans per edit to limit this, and on BrowseComp-Plus SCR matches standard serving in accuracy. We have not yet characterized where these approximations break down. More work is needed to profile their failure cases and to make reuse adaptive, deciding for each edit what to reuse and what to recompute.
+
 ## References
 
 ::: {.references}
