@@ -75,7 +75,10 @@
     var sliders = {};
     function slider(key, label, min, max, step) {
       var w = el("label", "fs-slider");
-      w.appendChild(el("span", "fs-lab", label));
+      var lab = el("span", "fs-lab");
+      // colour the segment names like the token strip: B = removed (pink), B′ = inserted (rose)
+      lab.innerHTML = label.replace(/^B′/, '<span style="color:' + COL.edit + '">B′</span>').replace(/^B /, '<span style="color:#d4728f">B</span> ');
+      w.appendChild(lab);
       var inp = el("input"); inp.type = "range"; inp.min = min; inp.max = max; inp.step = step;
       var val = el("span", "fs-val");
       inp.addEventListener("input", function () { st[key] = +inp.value; clamp(key); sync(); });
