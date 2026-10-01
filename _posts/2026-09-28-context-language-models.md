@@ -133,6 +133,8 @@ Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which k
 
 ![Suffix Cache Reuse for full-attention layers (left) and linear-attention layers (right).]({{ '/assets/img/clm/full-vs-linear-attention-reuse.png' | relative_url }})
 
+Our implementation of Suffix Cache Reuse is available at [facebookresearch/context-language-models/suffix_cache_reuse](https://github.com/facebookresearch/context-language-models/tree/main/suffix_cache_reuse).
+
 ### Results on BrowseComp-Plus
 
 ![Suffix Cache Reuse on BrowseComp-Plus with a Qwen3.6-27B CLM. All 830 questions were served both ways. Left: task accuracy. Middle: compute per question, split into prefill and decode. Right: where the prompt tokens came from, over all turns and over the turns right after a context edit.]({{ '/assets/img/clm/scr-bcp830-results.png' | relative_url }})
