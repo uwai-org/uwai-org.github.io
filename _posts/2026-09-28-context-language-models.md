@@ -1,5 +1,5 @@
 ---
-title: "Suffix Cache Reuse"
+title: "Suffix Cache Reuse Explained"
 author: WAI
 date: 2026-09-28
 permalink: /blog/clm/
@@ -17,7 +17,7 @@ description: >-
 ---
 
 ::::: {.post-hero}
-<h1 class="title">Suffix Cache Reuse</h1>
+<h1 class="title">Suffix Cache Reuse Explained</h1>
 
 :::: {.post-subtitle}
 Deep Dive in Efficient Serving for Context Language Models[^clm]
