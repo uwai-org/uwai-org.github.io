@@ -329,7 +329,7 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
   color: var(--color-text-secondary);
 }
 .post-hero .post-subtitle p { margin: 0; }
-.post-hero .post-subtitle .sidenote { font-size: 11px; line-height: 1.35; white-space: normal; }
+.post-hero .post-subtitle .sidenote { font-size: 11px; line-height: 1.35; white-space: normal; text-align: left; }
 .post-hero .post-date {
   font-family: var(--font-family-sans);
   font-size: 13px;

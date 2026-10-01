@@ -139,9 +139,11 @@ Please cite this work as:
 ```
 @article{shao2026context,
   title   = {Context Language Models},
-  author  = {Shao, Rulin and Shen, Shannon Zejiang and Yin, Junjie Oscar and Li, Yuetai and
-             Wang, Minheng and Ivison, Hamish and Poovendran, Radha and Lambert, Nathan and
-             Xiao, Teng and Lewis, Mike and Yih, Wen-tau and Zettlemoyer, Luke and Koh, Pang Wei},
+  author  = {Shao, Rulin and Shen, Shannon Zejiang and Yin, Junjie Oscar and
+             Li, Yuetai and Wang, Minheng and Ivison, Hamish and
+             Poovendran, Radha and Lambert, Nathan and Xiao, Teng and
+             Lewis, Mike and Yih, Wen-tau and Zettlemoyer, Luke and
+             Koh, Pang Wei},
   journal = {arXiv preprint arXiv:2609.37725},
   year    = {2026}
 }
