@@ -177,8 +177,8 @@
       legend.push(["generated", COL.gen]);
       legend.forEach(function (g) {
         sv("rect", { x: lx, y: ly, width: 11, height: 11, rx: 2, fill: g[1] }, strips);
-        var tt = text(strips, lx + 16, ly + 10, g[0], "fs-leg");
-        lx += 16 + tt.getComputedTextLength() + 16;
+        var tt = text(strips, lx + 15, ly + 10, g[0], "fs-leg");
+        lx += 15 + tt.getComputedTextLength() + 11;   // tight enough for five entries at 600px (Rulin 2026-10-01)
       });
       strips.setAttribute("viewBox", "0 0 " + W + " " + (ly + 16));
 
