@@ -831,16 +831,14 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
   color: var(--ink);
 }
 .tok-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 18px;
-  margin-top: -10px;
+  margin-top: 8px;
   font-family: var(--font-family-sans);
   font-size: 12.5px;
   line-height: 18px;
   color: var(--color-text-secondary);
 }
-.tok-legend p { margin: 0; display: contents; }
+.tok-legend p { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.tok-legend span.item { white-space: nowrap; }
 .tok-legend .sw {
   display: inline-block;
   width: 14px;

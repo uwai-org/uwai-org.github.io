@@ -65,7 +65,7 @@ When we measure the cost of Context Language Models (CLMs),[^clm] we account for
 :::
 
 ::: {.tok-legend}
-[ ]{.sw .sw-cached} served from the prefix cache [ ]{.sw .sw-prefill} prefilled: the edited *B′* and the unchanged *C* after it [×]{.sw-x} first prefix mismatch
+[[ ]{.sw .sw-cached} prefix cache hit]{.item} [[ ]{.sw .sw-prefill} prefilled: *B′* and the unchanged *C*]{.item} [[×]{.sw-x} first prefix mismatch]{.item}
 :::
 ::::
 
