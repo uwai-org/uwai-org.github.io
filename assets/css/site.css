@@ -708,7 +708,8 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
   color: #0668E1;
   margin: calc(0.25 * var(--line-height)) auto calc(-0.75 * var(--line-height));
 }
-.scr-tagline p { margin: 0; }
+.scr-tagline p { margin: 0; white-space: nowrap; }
+@media (max-width: 720px) { .scr-tagline p { white-space: normal; } }
 .scr-teaser {
   margin: calc(1.25 * var(--line-height)) 0;
 }
