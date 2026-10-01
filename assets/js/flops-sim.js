@@ -1,4 +1,4 @@
-/* Interactive prefix-reuse FLOPs figures for the Suffix Cache Reuse post.
+/* Interactive Prefix Reuse FLOPs figures for the Suffix Cache Reuse post.
  *
  * Markup:  ::: {.flops-sim mode="standard"}  caption  :::   (or mode="scr")
  *
@@ -74,7 +74,7 @@
     var W = 600, LBL = 128, BAR = W - LBL - 8;
     var strips = sv("svg", { class: "fs-svg", role: "img", "aria-label": "Tokens of the turn" }, left);
     var BW = 250;
-    var bars = sv("svg", { class: "fs-svg fs-bars", role: "img", "aria-label": "Prefix-reuse FLOPs of the turn" }, right);
+    var bars = sv("svg", { class: "fs-svg fs-bars", role: "img", "aria-label": "Prefix Reuse FLOPs of the turn" }, right);
     var stats = el("div", "fs-stats"); left.appendChild(stats);
     var tip = el("div", "fs-tip"); box.appendChild(tip);
 
@@ -212,7 +212,7 @@
       var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40, colW = (BW - x0 - 8) / items.length;
       var maxV = Math.max(t.none.total, items[0].c.total, items[1].c.total) * 1.04;
       var yv = function (v) { return top + plotH * (1 - v / maxV); };
-      text(bars, 0, 12, "PREFIX-REUSE FLOPS (×10¹⁴)", "fs-cap");
+      text(bars, 0, 12, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap");
       var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
       for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
         var yy = yv(v * 1e14);

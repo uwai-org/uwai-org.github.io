@@ -1,5 +1,5 @@
 ---
-title: "Cache Reuse for Context Language Models"
+title: "Suffix Cache Reuse"
 author: WAI
 date: 2026-09-28
 permalink: /blog/clm/
@@ -16,7 +16,7 @@ description: >-
 ---
 
 ::::: {.post-hero}
-<h1 class="title">Cache Reuse for Context Language Models</h1>
+<h1 class="title">Suffix Cache Reuse</h1>
 
 :::: {.byline}
 Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang,
@@ -43,18 +43,18 @@ When we measure the cost of Context Language Models (CLMs), we account for **pre
 
 ![Standard serving after an edit replaces B with B′. The prefix cache covers A; B′ and all of the unchanged C are prefilled again.]({{ '/assets/img/clm/standard-serving.png' | relative_url }})
 
-To account for this, we measure theoretical inference FLOPs with a metric we call **prefix-reuse FLOPs**:
+To account for this, we measure theoretical inference FLOPs with a metric we call **Prefix Reuse FLOPs**:
 
 $$
-\mathrm{FLOPs}_{\text{prefix-reuse}}
+\mathrm{FLOPs}_{\text{Prefix Reuse}}
 = \underbrace{\mathrm{FLOPs}_{\text{prefill}}\big(\text{unmatched suffix}\big)}_{\text{from the first prefix mismatch onward}}
 + \underbrace{\mathrm{FLOPs}_{\text{decode}}\big(\text{generated tokens}\big)}_{\text{new output tokens}}
 $$
 
-Every cost number in [the paper](https://arxiv.org/abs/2609.37725) uses this metric under standard serving, so when we say CLMs are cheaper than the baselines, that already includes the lower cache hit rate their edits cause. The visualization below shows how the prefix-reuse FLOPs of one turn change with an edit.
+Every cost number in [the paper](https://arxiv.org/abs/2609.37725) uses this metric under standard serving, so when we say CLMs are cheaper than the baselines, that already includes the lower cache hit rate their edits cause. The visualization below shows how the Prefix Reuse FLOPs of one turn change with an edit.
 
 ::: {.flops-sim mode="standard"}
-**Prefix-reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bars compare the turn with the edit against the same turn appending B′ at the end instead.
+**Prefix Reuse FLOPs of one Qwen3.6-27B turn under standard serving.** Move the edit or change its size; the bars compare the turn with the edit against the same turn appending B′ at the end instead.
 :::
 
 The hit rate does drop, and we measured it. With a Qwen3.6-27B CLM on BrowseComp-Plus, standard SGLang serves 72.9% of all prompt tokens from its prefix cache, but only 24.2% on the turns right after a context edit. The rest of an edited turn is processed again, including the large part of the context that the edit left unchanged.
