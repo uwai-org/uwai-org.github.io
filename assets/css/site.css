@@ -330,6 +330,7 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 }
 .post-hero .post-subtitle p { margin: 0; }
 .clm-blue { color: #0668E1; }
+.ctx-o { color: #1179b5; } .ctx-e { color: #c23962; }
 .marginnote .clm-cover { display: block; width: 100%; margin-top: 8px; border: 1px solid var(--color-border); border-radius: 6px; }
 .post-hero .post-subtitle .sidenote { font-size: 11px; line-height: 1.35; white-space: normal; text-align: left; }
 .post-hero .post-date {
