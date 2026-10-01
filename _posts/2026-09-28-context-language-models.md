@@ -69,7 +69,7 @@ Below is a simplified example: the context [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.c
 :::
 ::::
 
-When we measure the cost of CLMs, we account for **prefix-cache reuse**, that is, for the KV cache hit rate. To account for this, we measure theoretical inference FLOPs with a metric we call **Prefix Reuse FLOPs**:
+When measuring CLM efficiency, we account for **prefix-cache reuse**, i.e., which tokens can reuse cached KV states. We capture this with a theoretical inference-cost metric we call **Prefix-Reuse FLOPs**:
 
 $$
 \mathrm{FLOPs}_{\text{Prefix Reuse}}
