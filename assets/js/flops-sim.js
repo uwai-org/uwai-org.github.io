@@ -63,8 +63,14 @@
     var left = el("div", "fs-left"), right = el("div", "fs-right");
     main.appendChild(left); main.appendChild(right);
 
+    // Panel titles live in HTML so the two line up at the top of both columns (Rulin 2026-10-01);
+    // the strips are then centred in the space left under their title.
+    left.appendChild(el("div", "fs-ptitle", "Context edit and cache reuse"));
+    var rt = el("div", "fs-ptitle", "Prefix Reuse FLOPs"); right.appendChild(rt);
+    rt.appendChild(el("span", "fs-ptitle-unit", "\u00d710\u00b9\u2074"));   // unit on its own small line
     var W = 600, LBL = 128, BAR = W - LBL - 8;
-    var strips = sv("svg", { class: "fs-svg", role: "img", "aria-label": "Tokens of the turn" }, left);
+    var swrap = el("div", "fs-strips-wrap"); left.appendChild(swrap);
+    var strips = sv("svg", { class: "fs-svg", role: "img", "aria-label": "Tokens of the turn" }, swrap);
     var BW = 250;
     var bars = sv("svg", { class: "fs-svg fs-bars", role: "img", "aria-label": "Prefix Reuse FLOPs of the turn" }, right);
     var tip = el("div", "fs-tip"); box.appendChild(tip);
@@ -124,21 +130,20 @@
       var t = model(st);
       // ---------------- token strips
       while (strips.firstChild) strips.removeChild(strips.firstChild);
-      var defs = sv("defs", {}, strips);
-      var pat = sv("pattern", { id: "fs-hatch-" + mode, width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
-      sv("rect", { width: 6, height: 6, fill: "#f6dbe3" }, pat);
-      sv("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: COL.removed, "stroke-width": 2.2 }, pat);
-      var hatch = "url(#fs-hatch-" + mode + ")";
-
-      var lanes = [];   // the edit itself is shown as a schematic header, not as a to-scale lane (Rulin 2026-09-30)
+      // Lanes are to scale (Rulin 2026-10-01): the context before the edit in grey, then the
+      // same turn after the edit under prefix caching (and under SCR in the second figure).
+      var lanes = [{ label: "before the edit", segs: [
+        { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "unchanged prefix" },
+        { n: t.del, fill: COL.cached, tag: "B", name: "B", note: "replaced by the edit" },
+        { n: t.C, fill: COL.cached, tag: "C", name: "C", note: "unchanged suffix" }] }];
       var out = { n: G, fill: COL.gen, tag: "out", dark: true, name: "response", note: "generated" };
       if (mode === "standard") {
-        lanes.push({ label: "prefix caching", segs: [
+        lanes.push({ label: "after the edit", sub: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
           { n: t.ins, fill: COL.edit, tag: "B′", dark: true, name: "B′, written by the edit", note: "prefilled" },
           { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "re-prefilled: the prefix cache stops at the first changed token" }, out] });
       } else {
-        lanes.push({ label: "prefix caching", segs: [
+        lanes.push({ label: "after the edit", sub: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
           { n: t.ins, fill: COL.edit, tag: "B′", dark: true, name: "B′, written by the edit", note: "prefilled" },
           { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "re-prefilled: the prefix cache stops at the first changed token" }, out] });
@@ -150,30 +155,9 @@
       var maxTok = Math.max.apply(null, lanes.map(function (l) { return l.segs.reduce(function (a, s) { return a + Math.max(0, s.n); }, 0); }));
       var sx = function (k) { return LBL + BAR * k / maxTok; };
       var y = 4;
-      text(strips, LBL + (W - LBL) / 2, y + 9, "CONTEXT EDIT AND CACHE REUSE", "fs-cap fs-cap-r", "middle");   // panel title, centred over the strips
-      y += 20;
-      // ---- schematic header: [A][B][C] -> [A][B′][C]
-      (function () {
-        var hx = LBL, hy = y, bh = 18;
-        text(strips, LBL - 12, hy + 13, "the edit", "fs-lane", "end");
-        function box(w, fill, lab, dark, note) {
-          var r = sv("rect", { x: hx, y: hy, width: w, height: bh, rx: 2, fill: fill }, strips);
-          if (note) hover(r, "<b>" + lab + "</b><br><span>" + note + "</span>");
-          var lt = text(strips, hx + w / 2, hy + 13, lab, dark ? "fs-seg fs-seg-dark" : "fs-seg", "middle"); lt.style.pointerEvents = "none";
-          hx += w + 3;
-        }
-        box(54, COL.cached, "A", false, "unchanged prefix");
-        box(40, hatch, "B", false, "replaced by the edit");
-        box(70, COL.cached, "C", false, "unchanged suffix");
-        text(strips, hx + 12, hy + 13, "→", "fs-lane", "middle"); hx += 28;
-        box(54, COL.cached, "A", false, "unchanged prefix");
-        box(28, COL.edit, "B′", true, "written by the edit");
-        box(70, COL.cached, "C", false, "unchanged suffix, now at new positions");
-      })();
-      y += 32;
       lanes.forEach(function (l) {
-        text(strips, LBL - 12, y + 13, l.label, "fs-lane", "end");
-        if (l.sub) text(strips, LBL - 12, y + 26, l.sub, "fs-lane-sub", "end");
+        text(strips, LBL - 12, y + (l.sub ? 9 : 14), l.label, "fs-lane", "end");
+        if (l.sub) text(strips, LBL - 12, y + 21, l.sub, "fs-lane-sub", "end");
         var x = 0;
         l.segs.forEach(function (s) {
           if (s.n <= 0) return;
@@ -226,12 +210,11 @@
       if (mode === "standard") {
         // One bar: the composition of the turn's Prefix Reuse FLOPs under prefix caching
         // (Rulin 2026-09-30): B' prefill vs the re-prefill of the unchanged C, plus decode.
-        var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40;
+        var H = 218, top = 22, bot = 40, plotH = H - top - bot, x0 = 40;
         var segs = segsOf(t);
         var tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
-        text(bars, BW / 2, 13, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap fs-cap-r", "middle");
         var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
         for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
           var yy = yv(v * 1e14);
@@ -248,16 +231,15 @@
       } else {
         // Two stacked bars with the same composition as the first figure; the C re-prefill that
         // Suffix Cache Reuse removes is drawn as a dashed green outline on the SCR bar.
-        var H = 272, top = 62, bot = 58, plotH = H - top - bot, x0 = 40;
+        var H = 258, top = 48, bot = 58, plotH = H - top - bot, x0 = 40;
         var segs = segsOf(t), tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
         var kept = segs.slice(0, 2), ktot = kept[0].total + kept[1].total, cseg = segs[2];
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
-        text(bars, BW / 2, 13, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap fs-cap-r", "middle");
         // legend for the bar colors (Rulin 2026-09-30): same encoding as the first figure
         var leg = [[segs[2].fill, "C re-prefill", 0, 0], [segs[1].fill, "B′ prefill", 1, 0], [segs[0].fill, "decode", 0, 1], ["dash", "saved by SCR", 1, 1]];
         leg.forEach(function (g) {
-          var lx = 2 + g[2] * 118, ly = 22 + g[3] * 15;
+          var lx = 2 + g[2] * 118, ly = 8 + g[3] * 15;
           if (g[0] === "dash") sv("rect", { x: lx, y: ly, width: 11, height: 10, fill: "rgba(61,154,80,0.10)", stroke: COL.reused, "stroke-width": 1.2, "stroke-dasharray": "3 2" }, bars);
           else sv("rect", { x: lx, y: ly, width: 11, height: 10, rx: 2, fill: g[0] }, bars);
           text(bars, lx + 15, ly + 9, g[1], "fs-leg");
