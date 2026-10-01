@@ -49,6 +49,8 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 
 We recently introduced Context Language Models (CLMs),[^clm][![The Context Language Models paper at a glance]({{ '/assets/img/clm/clm-paper-cover.jpg' | relative_url }}){.clm-cover}]{.marginnote} which treat context as a file and can perform arbitrary manipulations on it. We showed that CLMs outperform state-of-the-art, human-designed context-management harnesses at lower cost. In this blog, we dive deeper into the efficiency side of CLMs: what metric do we use to capture the realistic serving cost while being cache aware, and how could we further improve the cache hit rate by designing serving systems for agents?
 
+## Accounting for Prefix-Cache Violations in Cost: Prefix-Reuse FLOPs
+
 **Background: existing cache reuse often assumes append-only context.** Serving engines such as [SGLang](https://arxiv.org/abs/2312.07104) cache KV states in a [radix tree](https://en.wikipedia.org/wiki/Radix_tree) and reuse the longest matching prefix of a new request. Tokens after the first mismatch must be re-prefilled. This works naturally for append-only histories, but after an in-the-middle edit, even unchanged suffix tokens are recomputed.
 
 Below is a simplified example: the context [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap} is edited into [[*A*]{.ctx-o} [*B′*]{.ctx-e} [*C*]{.ctx-e}]{.nowrap}, with the colors matching the token strip. The prefix [*A*]{.ctx-o} still matches, so its cache is reused; the match breaks at [*B′*]{.ctx-e}, so [*B′*]{.ctx-e} and the unchanged [*C*]{.ctx-e} after it are prefilled together.
@@ -131,7 +133,7 @@ Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which k
 
 ![Suffix Cache Reuse for full-attention layers (left) and linear-attention layers (right).]({{ '/assets/img/clm/full-vs-linear-attention-reuse.png' | relative_url }})
 
-## Results on BrowseComp-Plus
+### Results on BrowseComp-Plus
 
 ![Suffix Cache Reuse on BrowseComp-Plus with a Qwen3.6-27B CLM. All 830 questions were served both ways. Left: task accuracy. Middle: compute per question, split into prefill and decode. Right: where the prompt tokens came from, over all turns and over the turns right after a context edit.]({{ '/assets/img/clm/scr-bcp830-results.png' | relative_url }})
 
