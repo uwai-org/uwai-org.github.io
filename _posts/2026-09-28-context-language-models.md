@@ -49,7 +49,7 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 
 We recently introduced Context Language Models (CLMs),[^clm][![The Context Language Models paper at a glance]({{ '/assets/img/clm/clm-paper-cover.jpg' | relative_url }}){.clm-cover}]{.marginnote} which treat context as a file and can perform arbitrary manipulations on it. We showed that CLMs outperform state-of-the-art, human-designed context-management harnesses at lower cost. In this blog, we dive deeper into the efficiency side of CLMs: what metric do we use to capture the realistic serving cost while being cache aware, and how could we further improve the cache hit rate by designing serving systems for agents?
 
-## Accounting for Prefix-Cache Violations in Cost: Prefix-Reuse FLOPs
+## Prefix-Reuse FLOPs
 
 **Background: existing cache reuse often assumes append-only context.** Serving engines such as [SGLang](https://arxiv.org/abs/2312.07104) and [vLLM](https://arxiv.org/abs/2309.06180) cache KV states, for example in a [radix tree](https://en.wikipedia.org/wiki/Radix_tree), and reuse the longest matching prefix of a new request. Tokens after the first mismatch must be re-prefilled. This works naturally for append-only histories, but after an in-the-middle edit, even unchanged suffix tokens are recomputed.
 
