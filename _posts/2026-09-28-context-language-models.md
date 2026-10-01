@@ -51,7 +51,7 @@ We recently introduced Context Language Models (CLMs),[^clm][![The Context Langu
 
 **Background: existing cache reuse often assumes append-only context.** Serving engines such as [SGLang](https://arxiv.org/abs/2312.07104) cache KV states in a [radix tree](https://en.wikipedia.org/wiki/Radix_tree) and reuse the longest matching prefix of a new request. Tokens after the first mismatch must be re-prefilled. This works naturally for append-only histories, but after an in-the-middle edit, even unchanged suffix tokens are recomputed.
 
-When we measure the cost of CLMs, we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Below is a simplified example: the context [*A*]{.ctx-o} [*B*]{.ctx-o} [*C*]{.ctx-o} is edited into [*A*]{.ctx-o} [*B′*]{.ctx-e} [*C*]{.ctx-o}, with the colors matching the token strip.
+When we measure the cost of CLMs, we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Below is a simplified example: the context [[*A*]{.ctx-o} [*B*]{.ctx-o} [*C*]{.ctx-o}]{.nowrap} is edited into [[*A*]{.ctx-o} [*B′*]{.ctx-e} [*C*]{.ctx-o}]{.nowrap}, with the colors matching the token strip.
 
 [^clm]: Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, and Pang Wei Koh. "[Context Language Models](https://arxiv.org/abs/2609.37725)." arXiv preprint arXiv:2609.37725, 2026.
 
