@@ -630,6 +630,7 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .fs-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .fs-svg text { font-family: var(--font-family-sans); fill: var(--color-text); }
 .fs-svg .fs-cap { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; fill: var(--color-text-secondary); }
+.fs-svg .fs-cap-r { font-size: 12.5px; font-weight: 700; letter-spacing: 1px; fill: var(--color-text); }   /* bar-chart title: bold, larger, centred */
 .fs-svg .fs-lane { font-size: 12.5px; }
 .fs-svg .fs-lane-sub { font-size: 10.5px; fill: var(--color-text-secondary); }
 .fs-svg .fs-seg { font-size: 11px; font-style: italic; fill: #3c3a36; }

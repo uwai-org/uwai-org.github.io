@@ -231,7 +231,7 @@
         var tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
-        text(bars, 0, 12, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap");
+        text(bars, BW / 2, 13, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap fs-cap-r", "middle");
         var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
         for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
           var yy = yv(v * 1e14);
@@ -253,7 +253,7 @@
         var kept = segs.slice(0, 2), ktot = kept[0].total + kept[1].total, cseg = segs[2];
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
-        text(bars, 0, 12, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap");
+        text(bars, BW / 2, 13, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap fs-cap-r", "middle");
         // legend for the bar colors (Rulin 2026-09-30): same encoding as the first figure
         var leg = [[segs[2].fill, "C re-prefill", 0, 0], [segs[1].fill, "B′ prefill", 1, 0], [segs[0].fill, "decode", 0, 1], ["dash", "saved by SCR", 1, 1]];
         leg.forEach(function (g) {
