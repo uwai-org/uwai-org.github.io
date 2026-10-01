@@ -199,16 +199,34 @@
 
       // ---------------- FLOPs bars
       while (bars.firstChild) bars.removeChild(bars.firstChild);
-      if (mode === "standard") {
-        // One bar: the composition of the turn's Prefix Reuse FLOPs under prefix caching
-        // (Rulin 2026-09-30): B' prefill vs the re-prefill of the unchanged C, plus decode.
-        var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40;
+      // FLOPs of the edited turn under prefix caching, split by what is processed (top to bottom of the bar).
+      function segsOf(t) {
         var segs = [
           { tag: "decode", name: "response, generated", tok: G, lin: PER_TOKEN * G, att: PER_PAIR * (G * t.P + 0.5 * G * G), fill: COL.gen, dark: true },
           { tag: "B′ prefill", name: "B′, written by the edit: prefilled", tok: t.ins, lin: PER_TOKEN * t.ins, att: PER_PAIR * (t.ins * t.p + 0.5 * t.ins * t.ins), fill: "#c23a63", dark: true },
           { tag: "C re-prefill", name: "C, unchanged: prefilled again", tok: t.C, lin: PER_TOKEN * t.C, att: PER_PAIR * 0.5 * (t.P * t.P - (t.p + t.ins) * (t.p + t.ins)), fill: COL.prefill }
         ];
         segs.forEach(function (s) { s.total = s.lin + s.att; });
+        return segs;
+      }
+      function stackBar(svg, segs, cx, bw, baseY, plotH, maxV, labels, lastLabelY) {
+        var y = baseY, tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
+        segs.slice().reverse().forEach(function (s) {
+          var h = plotH * s.total / maxV; y -= h;
+          var r = sv("rect", { x: cx - bw / 2, y: y, width: bw, height: Math.max(h, 0.5), fill: s.fill }, svg);
+          hover(r, "<b>" + s.name + "</b> · " + e14(s.total) + " × 10¹⁴ FLOPs (" + (100 * s.total / tot).toFixed(0) + "% of the bar)<br><span>" +
+            num(s.tok) + " tokens · linear layers " + e14(s.lin) + " · attention " + e14(s.att) + "</span>");
+          var pct = (100 * s.total / tot).toFixed(0) + "%";
+          if (h > 15) { var tv = text(svg, cx, y + h / 2 + 4, pct, "fs-seg-v", "middle"); if (s.dark) tv.setAttribute("fill", "#fff"); }
+          if (labels) { var ly = Math.min(y + h / 2 + 4, lastLabelY - 13); lastLabelY = ly; text(svg, cx + bw / 2 + 8, ly, s.tag + (h > 15 ? "" : " " + pct), "fs-bar-l", "start"); }
+        });
+        return y;
+      }
+      if (mode === "standard") {
+        // One bar: the composition of the turn's Prefix Reuse FLOPs under prefix caching
+        // (Rulin 2026-09-30): B' prefill vs the re-prefill of the unchanged C, plus decode.
+        var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40;
+        var segs = segsOf(t);
         var tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
@@ -220,55 +238,42 @@
           text(bars, x0 - 6, yy + 4, (step < 1 ? v.toFixed(1) : String(Math.round(v))), "fs-tick", "end");
         }
         text(bars, BW - 4, 27, "no cache " + e14(t.none.total), "fs-ref-t", "end");
-        var cx = x0 + 62, bw = 60, y = top + plotH, lastLabelY = 1e9;
-        segs.slice().reverse().forEach(function (s) {
-          var h = plotH * s.total / maxV; y -= h;
-          var ly = Math.min(y + h / 2 + 4, lastLabelY - 13); lastLabelY = ly;
-          var r = sv("rect", { x: cx - bw / 2, y: y, width: bw, height: Math.max(h, 0.5), fill: s.fill }, bars);
-          hover(r, "<b>" + s.name + "</b> · " + e14(s.total) + " × 10¹⁴ FLOPs (" + (100 * s.total / tot).toFixed(0) + "% of the turn)<br><span>" +
-            num(s.tok) + " tokens · linear layers " + e14(s.lin) + " · attention " + e14(s.att) + "</span>");
-          var pct = (100 * s.total / tot).toFixed(0) + "%";
-          if (h > 15) { var tv = text(bars, cx, y + h / 2 + 4, pct, "fs-seg-v", "middle"); if (s.dark) tv.setAttribute("fill", "#fff"); }
-          text(bars, cx + bw / 2 + 8, ly, s.tag + (h > 15 ? "" : " " + pct), "fs-bar-l", "start");
-        });
+        var cx = x0 + 62, bw = 60;
+        stackBar(bars, segs, cx, bw, top + plotH, plotH, maxV, true, 1e9);
         text(bars, cx, yv(tot) - 6, e14(tot), "fs-bar-v", "middle");
         text(bars, cx, top + plotH + 16, "prefix caching", "fs-bar-l", "middle");
         var cseg = segs[2];
         text(bars, x0 + (BW - x0) / 2, H - 4, "C re-prefill = " + (100 * cseg.total / tot).toFixed(0) + "% of the turn", "fs-bar-note", "middle");
         bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
       } else {
-      var items = mode === "standard"
-        ? [{ name: "no cache", c: t.none, color: "#b8b3a8" }, { name: "prefix caching", c: t.std, color: "#e39bb0" }]
-        : [{ name: "prefix caching", c: t.std, color: "#e39bb0" }, { name: "+ SCR", c: t.scr, color: "#3d9a50" }];
-      var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40, colW = (BW - x0 - 8) / items.length;
-      var maxV = Math.max(t.none.total, items[0].c.total, items[1].c.total) * 1.04;
-      var yv = function (v) { return top + plotH * (1 - v / maxV); };
-      text(bars, 0, 12, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap");
-      var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
-      for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
-        var yy = yv(v * 1e14);
-        sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
-        text(bars, x0 - 6, yy + 4, (step < 1 ? v.toFixed(1) : String(Math.round(v))), "fs-tick", "end");
-      }
-      if (mode === "scr") {
-        var yn = yv(t.none.total);
-        sv("line", { x1: x0, x2: BW - 4, y1: yn, y2: yn, class: "fs-ref" }, bars);
-        text(bars, BW - 4, yn - 5, "no cache " + e14(t.none.total), "fs-ref-t", "end");
-      }
-      items.forEach(function (it, i) {
-        var cx = x0 + colW * (i + 0.5), bw = Math.min(54, colW * 0.56), yt = yv(it.c.total);
-        var r = sv("rect", { x: cx - bw / 2, y: yt, width: bw, height: top + plotH - yt, rx: 3, fill: it.color }, bars);
-        hover(r, "<b>" + it.name + "</b> · " + e14(it.c.total) + " × 10¹⁴ FLOPs<br><span>" + num(it.c.proc) + " prompt tokens processed + " + G +
-          " generated<br>linear layers " + e14(it.c.lin) + " · attention " + e14(it.c.att) + "</span>");
-        text(bars, cx, yt - 6, e14(it.c.total), "fs-bar-v", "middle");
-        text(bars, cx, top + plotH + 16, it.name, "fs-bar-l", "middle");
-      });
-      var a = items[0].c.total, b = items[1].c.total;
-      text(bars, x0 + (BW - x0) / 2, H - 4, mode === "standard"
-        ? "prefix caching avoids " + (100 * (1 - b / a)).toFixed(0) + "%"
-        : "SCR: " + (a / b).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
-      bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
-
+        // Two stacked bars with the same composition as the first figure; the C re-prefill that
+        // Suffix Cache Reuse removes is drawn as a dashed green outline on the SCR bar.
+        var H = 230, top = 34, bot = 40, plotH = H - top - bot, x0 = 40;
+        var segs = segsOf(t), tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
+        var kept = segs.slice(0, 2), ktot = kept[0].total + kept[1].total, cseg = segs[2];
+        var maxV = tot * 1.18;
+        var yv = function (v) { return top + plotH * (1 - v / maxV); };
+        text(bars, 0, 12, "PREFIX REUSE FLOPS (×10¹⁴)", "fs-cap");
+        text(bars, BW - 4, 27, "no cache " + e14(t.none.total), "fs-ref-t", "end");
+        var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
+        for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
+          var yy = yv(v * 1e14);
+          sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
+          text(bars, x0 - 6, yy + 4, (step < 1 ? v.toFixed(1) : String(Math.round(v))), "fs-tick", "end");
+        }
+        var colW = (BW - x0 - 8) / 2, bw = 54, c1 = x0 + colW * 0.5, c2 = x0 + colW * 1.5, base = top + plotH;
+        stackBar(bars, segs, c1, bw, base, plotH, maxV, false, 1e9);
+        text(bars, c1, yv(tot) - 6, e14(tot), "fs-bar-v", "middle");
+        text(bars, c1, base + 16, "prefix caching", "fs-bar-l", "middle");
+        var ytop = stackBar(bars, kept, c2, bw, base, plotH, maxV, false, 1e9);
+        var gh = plotH * cseg.total / maxV;
+        var ghost = sv("rect", { x: c2 - bw / 2, y: ytop - gh, width: bw, height: gh, fill: "rgba(61,154,80,0.10)", stroke: COL.reused, "stroke-width": 1.4, "stroke-dasharray": "4 3" }, bars);
+        hover(ghost, "<b>saved by Suffix Cache Reuse</b> · " + e14(cseg.total) + " × 10¹⁴ FLOPs<br><span>the re-prefill of " + num(t.C) + " unchanged tokens; their cache is relocated instead</span>");
+        if (gh > 28) { var g1 = text(bars, c2, ytop - gh / 2 - 2, "saved", "fs-seg-v", "middle"); g1.setAttribute("fill", COL.reused); var g2 = text(bars, c2, ytop - gh / 2 + 11, "by SCR", "fs-seg-v", "middle"); g2.setAttribute("fill", COL.reused); }
+        text(bars, c2, ytop - 6, e14(ktot), "fs-bar-v", "middle");
+        text(bars, c2, base + 16, "+ SCR", "fs-bar-l", "middle");
+        text(bars, x0 + (BW - x0) / 2, H - 4, "SCR: " + (tot / ktot).toFixed(1) + "× fewer FLOPs", "fs-bar-note", "middle");
+        bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
       }
       stats.innerHTML = mode === "standard"
         ? "prompt <b>" + num(t.P) + "</b> tokens · the edit makes the server process <b>" + num(t.C) + "</b> unchanged tokens again"

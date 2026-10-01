@@ -96,7 +96,7 @@ This is an approximation: C's cached states were computed under the old context,
 Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which keeps a fixed-size recurrent state rather than a per-token cache, so there are no per-token entries to move. For those layers, SCR continues from a snapshot of the recurrent state taken before the edit. The edit itself is seen by the 16 full-attention layers, and through their outputs it still reaches the later linear-attention layers.
 
 ::: {.flops-sim mode="scr"}
-**Adding Suffix Cache Reuse on top of prefix caching.** The same turn as in the first figure; the bars compare prefix caching with and without SCR. SCR is counted with B′ processed through every layer and C relocated as one span.
+**Adding Suffix Cache Reuse on top of prefix caching.** The same turn as in the first figure; the bars compare prefix caching with and without SCR, and the dashed green outline is the re-prefill of C that SCR removes. SCR is counted with B′ processed through every layer and C relocated as one span.
 :::
 
 ## Results on BrowseComp-Plus
