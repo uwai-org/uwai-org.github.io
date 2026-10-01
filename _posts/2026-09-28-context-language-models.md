@@ -20,7 +20,7 @@ description: >-
 <h1 class="title">Suffix Cache Reuse Explained</h1>
 
 :::: {.post-subtitle}
-Deep Dive in Efficient Serving for Context Language Models[^clm]
+Deep Dive in Efficient Serving for Context Language Models
 ::::
 
 :::: {.byline}
@@ -47,9 +47,9 @@ Before publishing: confirm author formatting (the TMax post bolds co-first autho
 
 **Resources:** [📄 Paper](https://arxiv.org/abs/2609.37725) · [👨‍💻 GitHub](https://github.com/facebookresearch/context-language-models) · [🐦 Tweet](#)
 
-When we measure the cost of Context Language Models (CLMs), we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Model servers such as vLLM and SGLang reuse the cached states of a prompt prefix that matches an earlier request, but every token from the first prefix mismatch onward must be prefilled again. This is exactly what happens after an edit in the middle of the context.
+When we measure the cost of Context Language Models (CLMs),[^clm] we account for **prefix-cache reuse**, that is, for the KV cache hit rate. Model servers such as vLLM and SGLang reuse the cached states of a prompt prefix that matches an earlier request, but every token from the first prefix mismatch onward must be prefilled again. This is exactly what happens after an edit in the middle of the context.
 
-[^clm]: Shao et al., "[Context Language Models](https://arxiv.org/abs/2609.37725)", arXiv:2609.37725, 2026. BibTeX at the end of the post.
+[^clm]: Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, and Pang Wei Koh. "[Context Language Models](https://arxiv.org/abs/2609.37725)." arXiv preprint arXiv:2609.37725, 2026.
 
 :::: {.tok-viz}
 ::: {.tok-row label="previous prompt, already in the cache"}
@@ -129,11 +129,9 @@ For the full details, see Appendix B of the paper.
 
 ## Related work
 
-Prefix caching is standard in serving engines. vLLM's [PagedAttention](https://arxiv.org/abs/2309.06180) and SGLang's [RadixAttention](https://arxiv.org/abs/2312.07104) keep the KV cache of earlier requests and reuse it for any new prompt that shares a prefix; everything after the first mismatch is prefilled again, which is the cost this post starts from.
+With standard prefix caching, changing an early part of a prompt forces the serving system to recompute the KV states of everything that follows, even when the later text is unchanged. Prior work relaxes this requirement in different settings. [Prompt Cache](https://arxiv.org/abs/2311.04934) precomputes attention states for predefined prompt modules, allowing a module to be reused in prompts that do not share the same preceding text. In retrieval-augmented generation, the same document may appear after different documents or instructions. [CacheBlend](https://arxiv.org/abs/2405.16444) and [EPIC](https://arxiv.org/abs/2410.15332) reuse cached document chunks in these new contexts, recomputing selected tokens to account for the changed surroundings.
 
-A line of work reuses cache for text that is not a prefix. [Prompt Cache](https://arxiv.org/abs/2311.04934) precomputes attention states for prompt modules at fixed positions. [CacheBlend](https://arxiv.org/abs/2405.16444), [Block-Attention](https://arxiv.org/abs/2409.15355), [EPIC](https://arxiv.org/abs/2410.15332) and [KVLink](https://arxiv.org/abs/2502.16002) reuse the cache of retrieved chunks placed at new positions and recover accuracy by recomputing a few tokens, by training the model to accept independently encoded blocks, or by inserting link tokens. These methods target retrieval, where the reused text is known ahead of time and the same chunk appears in many prompts.
-
-Suffix Cache Reuse applies the same idea inside one conversation: the reused text is whatever survives the model's own edit, it is reused once, and nothing is retrained or recomputed. The reused states keep their dependence on the replaced text; the results above show that this approximation costs no accuracy on BrowseComp-Plus, and the last section measures what it still leaves on the table.
+[PIE](https://arxiv.org/abs/2407.03157) studies cache reuse when a user modifies previously processed code and requests a new completion. It retains cached states for unchanged text after an edit and corrects their rotary positions, avoiding suffix recomputation. [Memento](https://arxiv.org/abs/2604.09852) evicts each completed reasoning block from the KV cache but keeps the cached states of its summary, which were computed while the block was still in context, and finds that these states retain useful information from the evicted block. Suffix Cache Reuse applies the same reuse principle to an agent's live context: when the agent replaces a span, the unchanged suffix retains its cached states rather than being prefilled again. We integrate this mechanism into SGLang for agent-driven context editing and further extend it to hybrid architectures that combine full-attention layers with linear-attention layers.
 
 ## Citation
 
