@@ -129,8 +129,6 @@ SCR removes most of the re-processing of unchanged text *after* an edit (31.1% o
 
 Over all turns, standard SGLang misses 8.1% of the prompt tokens this way, and 29.5% on edited turns. SCR still leaves a similar margin (6.4% and 22.7%). Saving recurrent states more often, for example at every message boundary, would trade memory for hit rate and improve both standard prefix caching and SCR; there may well be better techniques for it. We think there are many good research directions in serving models that edit their own context.
 
-For the full details, see Appendix B of the paper.
-
 ## Related work
 
 With standard prefix caching, changing an early part of a prompt forces the serving system to recompute the KV states of everything that follows, even when the later text is unchanged. Prior work relaxes this requirement in different settings. [Prompt Cache](https://arxiv.org/abs/2311.04934) precomputes attention states for predefined prompt modules, allowing a module to be reused in prompts that do not share the same preceding text. In retrieval-augmented generation, the same document may appear after different documents or instructions. [CacheBlend](https://arxiv.org/abs/2405.16444) and [EPIC](https://arxiv.org/abs/2410.15332) reuse cached document chunks in these new contexts, recomputing selected tokens to account for the changed surroundings.
