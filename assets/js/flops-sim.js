@@ -218,19 +218,25 @@
       if (mode === "standard") {
         // One bar: the composition of the turn's Prefix Reuse FLOPs under prefix caching
         // (Rulin 2026-09-30): B' prefill vs the re-prefill of the unchanged C, plus decode.
-        var H = 218, top = 22, bot = 40, plotH = H - top - bot, x0 = 40;
+        var H = 244, top = 48, bot = 40, plotH = H - top - bot, x0 = 40;
         var segs = segsOf(t);
         var tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
+        // legend like the second figure instead of labels beside the bar (Rulin 2026-10-01)
+        [[segs[2].fill, "C re-prefill", 0, 0], [segs[1].fill, "B′ prefill", 1, 0], [segs[0].fill, "decode", 0, 1]].forEach(function (g) {
+          var lx = 2 + g[2] * 118, ly = 8 + g[3] * 15;
+          sv("rect", { x: lx, y: ly, width: 11, height: 10, rx: 2, fill: g[0] }, bars);
+          text(bars, lx + 15, ly + 9, g[1], "fs-leg");
+        });
         var step = maxV / 1e14 > 60 ? 20 : maxV / 1e14 > 30 ? 10 : maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
         for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
           var yy = yv(v * 1e14);
           sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
           text(bars, x0 - 6, yy + 4, (step < 1 ? v.toFixed(1) : String(Math.round(v))), "fs-tick", "end");
         }
-        var cx = x0 + 62, bw = 60;
-        stackBar(bars, segs, cx, bw, top + plotH, plotH, maxV, true, 1e9);
+        var cx = x0 + (BW - x0) / 2, bw = 60;   // centred now that the side labels are gone
+        stackBar(bars, segs, cx, bw, top + plotH, plotH, maxV, false, 1e9);
         text(bars, cx, yv(tot) - 6, e14(tot), "fs-bar-v", "middle");
         text(bars, cx, top + plotH + 16, "prefix caching", "fs-bar-l", "middle");
         var cseg = segs[2];

@@ -139,6 +139,20 @@ With standard prefix caching, changing an early part of a prompt forces the serv
 
 Concurrently, [KV-streams](https://arxiv.org/abs/2609.35750), released in the last few days, keeps the KV cache across agentic compaction during reinforcement learning instead of flushing it, and reports a 2× speed-up on SWE tasks with any compaction method. That cache reuse across context edits is being picked up at the same time by several groups suggests it is becoming a hot topic, and we look forward to more work in this direction.
 
+## References
+
+::: {.references}
+1. Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang, Hamish Ivison, Radha Poovendran, Nathan Lambert, Teng Xiao, Mike Lewis, Wen-tau Yih, Luke Zettlemoyer, and Pang Wei Koh. [Context Language Models](https://arxiv.org/abs/2609.37725). arXiv:2609.37725, 2026.
+2. Lianmin Zheng et al. [SGLang: Efficient Execution of Structured Language Model Programs](https://arxiv.org/abs/2312.07104). arXiv:2312.07104, 2023.
+3. [Radix tree](https://en.wikipedia.org/wiki/Radix_tree). Wikipedia.
+4. In Gim et al. [Prompt Cache: Modular Attention Reuse for Low-Latency Inference](https://arxiv.org/abs/2311.04934). arXiv:2311.04934, 2023.
+5. Jiayi Yao et al. [CacheBlend: Fast Large Language Model Serving for RAG with Cached Knowledge Fusion](https://arxiv.org/abs/2405.16444). arXiv:2405.16444, 2024.
+6. Junhao Hu et al. [EPIC: Efficient Position-Independent Caching for Serving Large Language Models](https://arxiv.org/abs/2410.15332). arXiv:2410.15332, 2024.
+7. Zhenyu He et al. [Let the Code LLM Edit Itself When You Edit the Code](https://arxiv.org/abs/2407.03157) (PIE). arXiv:2407.03157, 2024.
+8. Vasilis Kontonis et al. [MEMENTO: Teaching LLMs to Manage Their Own Context](https://arxiv.org/abs/2604.09852). arXiv:2604.09852, 2026.
+9. Emiliano Penaloza et al. [KV-streams for Efficient Compaction in Agentic Reinforcement Learning](https://arxiv.org/abs/2609.35750). arXiv:2609.35750, 2026.
+:::
+
 ## Citation
 
 ::: {.citation}

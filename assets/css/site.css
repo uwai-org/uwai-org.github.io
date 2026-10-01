@@ -266,6 +266,11 @@ pre > code.sourceCode .bn { color: #b35c00; }
 pre > code.sourceCode .fu,
 pre > code.sourceCode .bu { color: #1f5fbf; }
 
+/* ----- References: compact numbered list, smaller type ----------------- */
+.references ol { font-size: 0.85em; line-height: 1.45; padding-left: 1.6em; margin: 0 0 var(--line-height); }
+.references li { margin: 0 0 0.35em; }
+.references li::marker { color: var(--color-text-secondary); }
+
 /* ----- Citation: render the cite blocks as clear, boxed code -------- */
 .citation pre {
   background-color: var(--color-inline-code-bg);
