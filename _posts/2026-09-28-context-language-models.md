@@ -113,9 +113,7 @@ Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which k
 
 Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question. On the turns right after an edit, SCR serves an extra 28.2% of the prompt from relocated cache that standard serving would have recomputed. CLMs were already cheaper than the baselines under standard serving, through better context management alone; SCR brings their serving cost down to 65% of that.
 
-## Bonus: reasoning models re-prefill even without edits
-
-There are other reasons a cache can miss. The chat templates of many reasoning models, including Qwen3.6, drop the reasoning blocks of earlier assistant turns once the next user message arrives. To the server, this looks like an edit: everything after the first dropped block is processed again, even when the agent never touched its context. As a result, each turn's final answer is processed twice, once when it is generated and again when the next prompt arrives without the reasoning in front of it.
+**Bonus: reasoning models re-prefill even without edits.** There are other reasons a cache can miss. The chat templates of many reasoning models, including Qwen3.6, drop the reasoning blocks of earlier assistant turns once the next user message arrives. To the server, this looks like an edit: everything after the first dropped block is processed again, even when the agent never touched its context. As a result, each turn's final answer is processed twice, once when it is generated and again when the next prompt arrives without the reasoning in front of it.
 
 SCR treats the dropped reasoning like any other edit and reuses the cache of the text after it. Breaking down where SCR's savings come from gave us a surprise: more of the reused cache comes from dropped reasoning than from the CLM's own edits.
 
@@ -123,9 +121,7 @@ SCR treats the dropped reasoning like any other edit and reuses the cache of the
 
 Over all turns, SCR reuses 7.8% of the prompt tokens beyond the prefix-cache hits; 5.3 points of that come after dropped reasoning and 2.5 after context edits. On the edited turns, the split is 19.3 against 8.9 points. So a large part of SCR's benefit also applies to standard reasoning-model serving, with no context editing at all.
 
-## What is still missed, and why
-
-We also looked at the prompt tokens that are still processed again under SCR.
+**What is still missed, and why.** We also looked at the prompt tokens that are still processed again under SCR.
 
 ![Remaining re-prefill under standard serving and under Suffix Cache Reuse on BrowseComp-Plus, split by why each token was processed. Same runs as above.]({{ '/assets/img/clm/scr-prefill-split.png' | relative_url }})
 
