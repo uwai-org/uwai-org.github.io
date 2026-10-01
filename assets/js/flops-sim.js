@@ -216,7 +216,7 @@
         var tot = segs.reduce(function (a, s) { return a + s.total; }, 0);
         var maxV = tot * 1.18;
         var yv = function (v) { return top + plotH * (1 - v / maxV); };
-        var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
+        var step = maxV / 1e14 > 60 ? 20 : maxV / 1e14 > 30 ? 10 : maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
         for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
           var yy = yv(v * 1e14);
           sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
@@ -245,7 +245,7 @@
           else sv("rect", { x: lx, y: ly, width: 11, height: 10, rx: 2, fill: g[0] }, bars);
           text(bars, lx + 15, ly + 9, g[1], "fs-leg");
         });
-        var step = maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
+        var step = maxV / 1e14 > 60 ? 20 : maxV / 1e14 > 30 ? 10 : maxV / 1e14 > 12 ? 5 : maxV / 1e14 > 5 ? 2 : maxV / 1e14 > 2.5 ? 1 : 0.5;
         for (var v = 0; v <= maxV / 1e14 + 1e-9; v += step) {
           var yy = yv(v * 1e14);
           sv("line", { x1: x0, x2: BW - 4, y1: yy, y2: yy, class: "fs-grid-line" }, bars);
