@@ -91,6 +91,8 @@ The hit rate does drop with in-the-middle edits and incurs re-prefilling of the 
 
 ## Suffix Cache Reuse
 
+Prefix cache reuse has become the tradition in serving engines because context has always been append-only. But can we adapt serving engines for AI's convenience, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient.
+
 ![Standard serving versus Suffix Cache Reuse after an edit replaces B with B'. Standard serving reuses the cache for A but must process B' and all of C again. Suffix Cache Reuse also reuses the cached states of C.]({{ '/assets/img/clm/suffix-cache-reuse.png' | relative_url }})
 
 Say the context is A B C, and an edit replaces B with B'. Standard serving reuses the cache for A and then stops, because a prefix cache only matches up to the first changed token: B' and all of C are processed again, even though C did not change. **Suffix Cache Reuse (SCR)** keeps the cached states for C instead of throwing them away. When the next prompt arrives, SCR compares it with the previous prompt of the same session to find the spans that survived the edit, shifts their rotary position encodings to their new positions, and splices them in after B'. Only B' and newly appended tokens are processed.
