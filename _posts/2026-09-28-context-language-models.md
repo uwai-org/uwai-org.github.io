@@ -89,7 +89,7 @@ By default, we use this metric to measure CLM efficiency under standard serving.
 
 The hit rate does drop with in-the-middle edits and incurs re-prefilling of the unchanged C.[^think] In our experiments with a Qwen3.6-27B CLM on BrowseComp-Plus, standard SGLang serves 72.9% of all prompt tokens from its prefix cache, but only 24.2% on the turns right after a context edit. The rest of an edited turn is prefilled again, including the large part of the context that the edit left unchanged.
 
-[^think]: This also happens beyond CLM serving: some chat endpoints remove the thinking tokens of earlier turns, so the tokens after them are re-prefilled in the next turn.
+[^think]: This also happens beyond CLM editing: some chat endpoints remove the thinking tokens of earlier turns, so the tokens after them are re-prefilled in the next turn.
 
 ## Suffix Cache Reuse
 
@@ -143,7 +143,7 @@ We perform an end-to-end evaluation of SCR on BrowseComp-Plus by simply switchin
 
 Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question. On the turns right after an edit, SCR serves an extra 28.2% of the prompt from relocated cache that standard serving would have recomputed. CLMs were already cheaper than the baselines under standard serving, through better context management alone; SCR brings their serving cost down to 65% of that.
 
-**Bonus: reasoning models re-prefill even without edits.** There are other reasons a cache can miss. The chat templates of many reasoning models, including Qwen3.6, drop the reasoning blocks of earlier assistant turns once the next user message arrives. To the server, this looks like an edit: everything after the first dropped block is processed again, even when the agent never touched its context. As a result, each turn's final answer is processed twice, once when it is generated and again when the next prompt arrives without the reasoning in front of it.
+**Bonus: server-side thinking-token stripping is a context edit too.** CLM editing is not the only source of context edits. The chat templates of many reasoning models, including Qwen3.6, drop the reasoning blocks of earlier assistant turns once the next user message arrives. This is a server-side edit that happens even when the agent never touches its context: everything after the first dropped block is prefilled again. As a result, each turn's final answer is prefilled twice, once when it is generated and again when the next prompt arrives without the reasoning in front of it.
 
 SCR treats the dropped reasoning like any other edit and reuses the cache of the text after it. Breaking down where SCR's savings come from gave us a surprise: more of the reused cache comes from dropped reasoning than from the CLM's own edits.
 
