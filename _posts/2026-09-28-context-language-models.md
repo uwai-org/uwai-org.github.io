@@ -1,5 +1,5 @@
 ---
-title: "Serving Context Language Models with Suffix Cache Reuse"
+title: "Cache Reuse for Context Language Models"
 author: WAI
 date: 2026-09-28
 permalink: /blog/clm/
@@ -16,7 +16,7 @@ description: >-
 ---
 
 ::::: {.post-hero}
-<h1 class="title">Serving Context Language Models with Suffix Cache Reuse</h1>
+<h1 class="title">Cache Reuse for Context Language Models</h1>
 
 :::: {.byline}
 Rulin Shao, Shannon Zejiang Shen, Junjie Oscar Yin, Yuetai Li, Minheng Wang,
