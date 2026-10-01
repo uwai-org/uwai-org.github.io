@@ -153,16 +153,16 @@
       if (mode === "standard") {
         lanes.push({ label: "after the edit", sub: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "processed" },
-          { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "processed again: the prefix cache stops at the first changed token" }, out] });
+          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "prefilled" },
+          { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "re-prefilled: the prefix cache stops at the first changed token" }, out] });
       } else {
         lanes.push({ label: "prefix caching", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "processed" },
-          { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "processed again: the prefix cache stops at the first changed token" }, out] });
+          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "prefilled" },
+          { n: t.C, fill: COL.prefill, tag: "C", name: "C, unchanged", note: "re-prefilled: the prefix cache stops at the first changed token" }, out] });
         lanes.push({ label: "+ Suffix Cache Reuse", segs: [
           { n: t.p, fill: COL.cached, tag: "A", name: "A", note: "reused from the prefix cache" },
-          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "processed" },
+          { n: t.ins, fill: COL.prefill, tag: "B′", name: "B′, written by the edit", note: "prefilled" },
           { n: t.C, fill: COL.reused, tag: "C", dark: true, name: "C, unchanged", note: "cache relocated to its new positions instead of recomputed" }, out] });
       }
       var maxTok = Math.max.apply(null, lanes.map(function (l) { return l.segs.reduce(function (a, s) { return a + Math.max(0, s.n); }, 0); }));
@@ -187,7 +187,7 @@
         y += 36;
       });
       var lx = LBL, ly = y;
-      var legend = [["cached", COL.cached], ["processed", COL.prefill]];
+      var legend = [["cached", COL.cached], ["prefilled / re-prefilled", COL.prefill]];
       if (mode === "scr") legend.push(["reused by SCR", COL.reused]);
       legend.push(["generated", COL.gen], ["replaced", hatch]);
       legend.forEach(function (g) {
@@ -284,8 +284,8 @@
         bars.setAttribute("viewBox", "0 0 " + BW + " " + H);
       }
       stats.innerHTML = mode === "standard"
-        ? "prompt <b>" + num(t.P) + "</b> tokens · the edit makes the server process <b>" + num(t.C) + "</b> unchanged tokens again"
-        : "SCR reuses the cache of <b>" + num(t.C) + "</b> unchanged tokens and processes only B′ (<b>" + num(t.ins) + "</b> tokens)";
+        ? "prompt <b>" + num(t.P) + "</b> tokens · the edit makes the server re-prefill <b>" + num(t.C) + "</b> unchanged tokens"
+        : "SCR reuses the cache of <b>" + num(t.C) + "</b> unchanged tokens and prefills only B′ (<b>" + num(t.ins) + "</b> tokens)";
     }
 
     sync();
