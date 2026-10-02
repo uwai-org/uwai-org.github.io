@@ -34,7 +34,7 @@ def row(y, groups):
     return spans, xs
 add(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="446" viewBox="0 0 {W} 446" font-family=\'{SANS}\'>')
 add('<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f7d3f"/></marker>'
-    '<marker id="arrg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a857b"/></marker></defs>')
+    '<marker id="arrs" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f7d3f"/></marker><marker id="arrg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a857b"/></marker></defs>')
 # ---- step 1: previous prompt, cached, with position ids
 y1 = 22
 text(12, y1 + 17, "① previous prompt", 12, INK, "start", weight="600"); text(12, y1 + 31, "cached with position ids", 10.5, MUTED)
@@ -70,11 +70,13 @@ add(f'<rect x="{lx}" y="{y3}" width="{lw}" height="{lh}" rx="6" fill="#faf9f6" s
 text(lx + 12, y3 + 20, "rotary position encoding", 11.5, MUTED)
 text(lx + 12, y3 + 44, "R(p) rotates each pair (k" + sb("j") + ", k" + sb("j+d") + ") by p·θ" + sb("j"), 12.5, INK, family=PROSE, style="italic")
 # small rotation glyph, top right of the card
-gx, gy, gr = lx + lw - 28, y3 + 24, 12
+# glyph: a vector rotated by p·θ_j; the angle arrow runs outside the circle so it stays legible
+gx, gy, gr = lx + lw - 34, y3 + 19, 9
 add(f'<circle cx="{gx}" cy="{gy}" r="{gr}" fill="none" stroke="#8a857b" stroke-width="1"/>')
 add(f'<line x1="{gx}" y1="{gy}" x2="{gx+gr}" y2="{gy}" stroke="#8a857b" stroke-width="1.2"/>')
 add(f'<line x1="{gx}" y1="{gy}" x2="{gx+gr*0.5:.1f}" y2="{gy-gr*0.87:.1f}" stroke="#2f7d3f" stroke-width="1.6"/>')
-add(f'<path d="M{gx+gr*0.72:.1f},{gy} A{gr*0.72:.1f},{gr*0.72:.1f} 0 0 0 {gx+gr*0.36:.1f},{gy-gr*0.62:.1f}" fill="none" stroke="#2f7d3f" stroke-width="1" marker-end="url(#arr)"/>')
+ro = gr + 4
+add(f'<path d="M{gx+ro:.1f},{gy} A{ro},{ro} 0 0 0 {gx+ro*0.5:.1f},{gy-ro*0.87:.1f}" fill="none" stroke="#2f7d3f" stroke-width="1" marker-end="url(#arrs)"/>')
 text(lx + 12, y3 + 70, "rotations add their angles:", 11, MUTED)
 text(lx + 12, y3 + 92, "R(a) · R(b) = R(a + b)", 13, INK, family=PROSE, style="italic")
 text(lx + 12, y3 + 118, "⇒ R(p" + sb("new") + ") = R(Δ) · R(p" + sb("old") + "),  Δ = p" + sb("new") + " − p" + sb("old"), 12.5, "#2f7d3f", family=PROSE, style="italic")
