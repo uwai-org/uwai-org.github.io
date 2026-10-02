@@ -45,7 +45,7 @@ when they’re no longer in an append-only relationship with the context” �
 Before publishing: confirm author formatting (the TMax post bolds co-first authors; the paper marks none), the publication date, and the missing links in the resources line (arXiv, tweet). Draft notes like this one only show up in local builds; production builds hide them.
 :::
 
-**Resources:** [📄 Paper](https://arxiv.org/abs/2609.37725) · [👨‍💻 GitHub](https://github.com/facebookresearch/context-language-models) · [🐦 Tweet](#)
+**Resources:** [📄 Paper](https://arxiv.org/abs/2609.37725) · [👨‍💻 GitHub](https://github.com/facebookresearch/context-language-models) · [🐦 Tweet](https://x.com/RulinShao/status/2105282444270448647)
 
 We recently introduced Context Language Models (CLMs),[^clm][![The Context Language Models paper at a glance]({{ '/assets/img/clm/clm-paper-cover.jpg' | relative_url }}){.clm-cover}]{.marginnote} which treat context as a file and can perform arbitrary manipulations on it. We showed that CLMs outperform state-of-the-art, human-designed context-management harnesses at lower cost. In this blog, we dive deeper into the efficiency side of CLMs: what metric do we use to capture the realistic serving cost while being cache aware, and how could we further improve the cache hit rate by designing serving systems for agents?
 
