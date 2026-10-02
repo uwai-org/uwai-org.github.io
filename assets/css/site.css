@@ -898,3 +898,8 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 .tok-viz-fig .tok-row + .tok-row { margin-top: 18px; }
 .tok-caption { margin-top: 4px; text-align: center; font-style: italic; font-size: var(--figcaption-font-size); line-height: var(--figcaption-line-height); color: var(--color-text-secondary); }
 .tok-caption > p { margin: 0; }
+
+/* ----- Links in the CLM post: light blue so citations stand out (Rulin 2026-10-01) ----- */
+main:has(.post-hero) a { color: #1a7fd4; }
+main:has(.post-hero) a:hover { color: #0b5fa8; }
+main:has(.post-hero) label.margin-toggle { color: #1a7fd4; }
