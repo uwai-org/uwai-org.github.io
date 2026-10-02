@@ -32,7 +32,7 @@ def row(y, groups):
             xs.append((name, x + w / 2)); x += w + GAP
         spans[name] = (gx, x - GAP); x += GGAP - GAP
     return spans, xs
-add(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="442" viewBox="0 0 {W} 442" font-family=\'{SANS}\'>')
+add(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="446" viewBox="0 0 {W} 446" font-family=\'{SANS}\'>')
 add('<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f7d3f"/></marker>'
     '<marker id="arrg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a857b"/></marker></defs>')
 # ---- step 1: previous prompt, cached, with position ids
@@ -59,32 +59,40 @@ for xo, xn in zip(oldC, newC):
 dx = X0
 text(dx, y1 + CH + 64, "Δ = |" + em("B′") + "| − |" + em("B") + "| = 2 − 4 = −2", 11.5, "#2f7d3f", "start", weight="600")
 text(dx, y1 + CH + 79, "every token of " + em("C") + " moves by Δ positions; its cached KV entries move with it", 10.5, MUTED)
-# ---- step 3: one relocated entry
+# ---- step 3: why one rotation by Δ relocates a cached entry, in every full-attention layer
 y3 = 266
-text(12, y3 + 17, "③ one entry of " + em("C"), 12, INK, "start", weight="600")
-text(12, y3 + 31, "position 8 → 6", 10.5, MUTED)
-# cached entry box
-bxw, bxh = 236, 110
-cx = X0; add(f'<rect x="{cx}" y="{y3}" width="{bxw}" height="{bxh}" rx="6" fill="#faf9f6" stroke="#8a857b" stroke-width="1"/>')
-text(cx + 12, y3 + 20, "cached entry, position 8", 11.5, MUTED)
-text(cx + 12, y3 + 46, 'K<tspan baseline-shift="sub" font-size="9">cached</tspan> = R(8) · k', 13, INK, family=PROSE, style="italic")
-text(cx + 12, y3 + 70, 'V<tspan baseline-shift="sub" font-size="9">cached</tspan> = v', 13, INK, family=PROSE, style="italic")
-text(cx + 12, y3 + 94, "R(p): rotary rotation at position p", 10.5, MUTED)
-# arrow box
-ax = cx + bxw + 14; add(f'<path d="M{ax},{y3+bxh/2} H{ax+58}" stroke="#2f7d3f" stroke-width="1.6" marker-end="url(#arr)"/>')
-text(ax + 29, y3 + bxh / 2 - 10, "rotate by Δ", 11, "#2f7d3f", "middle", weight="600")
-text(ax + 29, y3 + bxh / 2 + 20, "copy", 11, "#2f7d3f", "middle", weight="600")
-# new entry box
-nx = ax + 76; add(f'<rect x="{nx}" y="{y3}" width="{W-nx-12}" height="{bxh}" rx="6" fill="{COL["reu"][0]}" stroke="{COL["reu"][1]}" stroke-width="1"/>')
-text(nx + 12, y3 + 20, "relocated entry, position 6 · session-private slot", 11.5, COL["reu"][1])
-text(nx + 12, y3 + 46, 'K<tspan baseline-shift="sub" font-size="9">new</tspan> = R(6) · k = R(Δ) · K<tspan baseline-shift="sub" font-size="9">cached</tspan>', 13, INK, family=PROSE, style="italic")
-text(nx + 12, y3 + 70, 'V<tspan baseline-shift="sub" font-size="9">new</tspan> = V<tspan baseline-shift="sub" font-size="9">cached</tspan>', 13, INK, family=PROSE, style="italic")
-text(nx + 12, y3 + 94, "values carry no position; keys need one rotation", 10.5, MUTED)
-# footer notes
-fy = y3 + bxh + 26
-text(X0, fy, "Decoding then attends over [ " + em("A") + " | " + em("B′") + " | " + em("C") + " ] as if the whole prompt had been prefilled.", 11, INK)
-text(X0, fy + 15, "Linear-attention layers have no per-token entries; they continue from the recurrent-state", 11, INK)
-text(X0, fy + 30, "snapshot taken before the edit.", 11, INK)
+text(12, y3 + 17, "③ relocate", 12, INK, "start", weight="600")
+text(12, y3 + 31, "one rotation per key,", 10.5, MUTED); text(12, y3 + 44, "every layer", 10.5, MUTED)
+def sb(s): return f'<tspan baseline-shift="sub" font-size="9">{s}</tspan>'
+# left card: the rotary map R(p) and its composition rule
+lx, lw, lh = X0, 336, 162
+add(f'<rect x="{lx}" y="{y3}" width="{lw}" height="{lh}" rx="6" fill="#faf9f6" stroke="#8a857b" stroke-width="1"/>')
+text(lx + 12, y3 + 20, "rotary position encoding", 11.5, MUTED)
+text(lx + 12, y3 + 44, "R(p) rotates each pair (k" + sb("j") + ", k" + sb("j+d") + ") by p·θ" + sb("j"), 12.5, INK, family=PROSE, style="italic")
+# small rotation glyph, top right of the card
+gx, gy, gr = lx + lw - 28, y3 + 24, 12
+add(f'<circle cx="{gx}" cy="{gy}" r="{gr}" fill="none" stroke="#8a857b" stroke-width="1"/>')
+add(f'<line x1="{gx}" y1="{gy}" x2="{gx+gr}" y2="{gy}" stroke="#8a857b" stroke-width="1.2"/>')
+add(f'<line x1="{gx}" y1="{gy}" x2="{gx+gr*0.5:.1f}" y2="{gy-gr*0.87:.1f}" stroke="#2f7d3f" stroke-width="1.6"/>')
+add(f'<path d="M{gx+gr*0.72:.1f},{gy} A{gr*0.72:.1f},{gr*0.72:.1f} 0 0 0 {gx+gr*0.36:.1f},{gy-gr*0.62:.1f}" fill="none" stroke="#2f7d3f" stroke-width="1" marker-end="url(#arr)"/>')
+text(lx + 12, y3 + 70, "rotations add their angles:", 11, MUTED)
+text(lx + 12, y3 + 92, "R(a) · R(b) = R(a + b)", 13, INK, family=PROSE, style="italic")
+text(lx + 12, y3 + 118, "⇒ R(p" + sb("new") + ") = R(Δ) · R(p" + sb("old") + "),  Δ = p" + sb("new") + " − p" + sb("old"), 12.5, "#2f7d3f", family=PROSE, style="italic")
+text(lx + 12, y3 + 138, "the cached key already holds R(p" + sb("old") + ")·k,", 10.5, MUTED)
+text(lx + 12, y3 + 152, "so one extra rotation by Δ moves it to p" + sb("new"), 10.5, MUTED)
+# arrow
+ax = lx + lw + 10; add(f'<path d="M{ax},{y3+lh/2} H{ax+36}" stroke="#2f7d3f" stroke-width="1.6" marker-end="url(#arr)"/>')
+text(ax + 18, y3 + lh / 2 - 9, "apply", 10.5, "#2f7d3f", "middle", weight="600")
+# right: stack of full-attention layer cards with the same formula
+rx, rw, rh = ax + 50, W - (ax + 50) - 12, 116
+for off in (16, 8, 0):
+    add(f'<rect x="{rx+off*0.9:.1f}" y="{y3+18-off:.1f}" width="{rw-off*0.9:.1f}" height="{rh}" rx="6" fill="{COL["reu"][0]}" stroke="{COL["reu"][1]}" stroke-width="1" opacity="{0.55 if off else 1}"/>')
+cy = y3 + 18
+text(rx + 12, cy + 20, "full-attention layer ℓ = 1 … 16", 11.5, COL["reu"][1], weight="600")
+text(rx + 12, cy + 46, "K" + sb("ℓ,new") + " = R(Δ) · K" + sb("ℓ,cached"), 13, INK, family=PROSE, style="italic")
+text(rx + 12, cy + 70, "V" + sb("ℓ,new") + " = V" + sb("ℓ,cached"), 13, INK, family=PROSE, style="italic")
+text(rx + 12, cy + 92, "same formula in every layer;", 10.5, MUTED); text(rx + 12, cy + 106, "values carry no position", 10.5, MUTED)
+text(rx + rw - 2, y3 + lh + 2, "written to new slots after " + em("B′"), 10.5, MUTED, "end")
 add('</svg>')
 svg = "\n".join(out)
 import sys

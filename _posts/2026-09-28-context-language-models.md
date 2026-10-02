@@ -129,7 +129,7 @@ Say the context is [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap}, and an 
 
 [^k]: More details, such as how the cap on relocated spans is set and what effect it has, are in Appendix B of the paper; the main text uses k = 6.
 
-![How Suffix Cache Reuse relocates the cached entries of C: the new prompt is diffed against the cached one, every surviving token of C moves by Δ positions, and for each of its cached entries the key is rotated by Δ while the value is copied.]({{ '/assets/img/clm/scr-rope-rotation.svg' | relative_url }})
+![How Suffix Cache Reuse relocates the cached entries of C: the new prompt is diffed against the cached one, every surviving token of C moves by Δ positions, and because rotary encodings compose by adding angles, each cached key is moved with one rotation by Δ while the value is copied, in every full-attention layer.]({{ '/assets/img/clm/scr-rope-rotation.svg' | relative_url }})
 
 Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which keeps a fixed-size recurrent state rather than a per-token cache, so there are no per-token entries to move. For those layers, SCR continues from a snapshot of the recurrent state taken before the edit. The edit itself is seen by the 16 full-attention layers, and through their outputs it still reaches the later linear-attention layers.
 
