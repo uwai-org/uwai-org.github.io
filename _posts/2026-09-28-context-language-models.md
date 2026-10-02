@@ -93,7 +93,7 @@ The hit rate does drop with in-the-middle edits and incurs re-prefilling of the 
 
 ## Suffix Cache Reuse
 
-Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But we ask: **can we adapt serving engines for AI's convenience**, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient on the system side.
+Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But we ask: **can we adapt serving engines for AI's convenience?** To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient on the system side.
 
 ::::: {.tok-viz .tok-viz-fig}
 ::: {.tok-row label="before the edit"}
@@ -128,6 +128,8 @@ Say the context is [[*A*]{.ctx-g} [*B*]{.ctx-g} [*C*]{.ctx-g}]{.nowrap}, and an 
 **Technical details.** For full-attention layers, SCR reuses the cached keys and values of [*C*]{.ctx-r} as they are, except for position: after the edit, [*C*]{.ctx-r} sits earlier by the length difference between [*B*]{.ctx-g} and [*B′*]{.ctx-e}, so SCR re-rotates the rotary position encodings of its cached keys by that offset. Because rotary encodings depend only on position, this rotation is exact and far cheaper than recomputing the entries. SCR is an approximation: [*C*]{.ctx-r}'s cached states were computed under the old context, before the edit. To bound how much approximation one edit can introduce, SCR relocates at most six surviving spans per edit, the longest first, and re-prefills the rest.[^k]
 
 [^k]: More details, such as how the cap on relocated spans is set and what effect it has, are in Appendix B of the paper; the main text uses k = 6.
+
+![How Suffix Cache Reuse relocates the cached entries of C: the new prompt is diffed against the cached one, every surviving token of C moves by Δ positions, and because rotary encodings compose by adding angles, each cached key is moved with one rotation by Δ while the value is copied, in every full-attention layer.]({{ '/assets/img/clm/scr-rope-rotation.svg' | relative_url }})
 
 Qwen3.6-27B is a hybrid model: 48 of its 64 layers use linear attention, which keeps a fixed-size recurrent state rather than a per-token cache, so there are no per-token entries to move. For those layers, SCR continues from a snapshot of the recurrent state taken before the edit. The edit itself is seen by the 16 full-attention layers, and through their outputs it still reaches the later linear-attention layers.
 

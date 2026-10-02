@@ -1,0 +1,101 @@
+# Generates assets/img/clm/scr-rope-rotation.svg: how Suffix Cache Reuse relocates cached KV entries
+# (diff -> position shift -> rotate keys / copy values). Palette = the blog's token strip.
+import html
+W = 800
+PROSE = '"Iowan Old Style","Iowan Old Style BT","Palatino Linotype","Book Antiqua",Georgia,serif'
+SANS = 'system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif'
+COL = {"prev": ("#e6e3dc", "#8a857b"), "hit": ("#bcd8ee", "#1179b5"), "pre": ("#f4c8d6", "#c23962"), "reu": ("#cfe8d4", "#2f7d3f")}
+INK = "#2b2a27"; MUTED = "#6f6b64"; ROSE = "#c23962"
+out = []
+def add(s): out.append(s)
+def text(x, y, s, size=12, fill=INK, anchor="start", family=SANS, style="", weight="normal", extra=""):
+    add(f'<text x="{x:.1f}" y="{y:.1f}" font-family=\'{family}\' font-size="{size}" fill="{fill}" text-anchor="{anchor}" font-style="{style or "normal"}" font-weight="{weight}" {extra}>{s}</text>')
+def chip(x, y, w, h, kind, label, dashed=False):
+    fill, ink = COL[kind]
+    add(f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="4" fill="{fill}" stroke="{ink}" stroke-width="1" {"stroke-dasharray=\"4 3\"" if dashed else ""}/>')
+    text(x + w / 2, y + h / 2 + 5, label, 14, INK, "middle", PROSE)
+def bracket(x1, x2, y, ink, label, label_html=None):
+    add(f'<path d="M{x1:.1f},{y-6:.1f} V{y:.1f} H{x2:.1f} V{y-6:.1f}" fill="none" stroke="{ink}" stroke-width="1.5"/>')
+    add(f'<text x="{(x1+x2)/2:.1f}" y="{y+16:.1f}" font-family=\'{SANS}\' font-size="12" fill="{ink}" text-anchor="middle">{label_html or label}</text>')
+def em(s): return f'<tspan font-family=\'{PROSE}\' font-style="italic" font-size="13">{s}</tspan>'
+CH, GAP, GGAP = 26, 4, 16
+def cw(t): return 12 + 7.2 * len(t)   # chip width from the label length
+X0 = 150
+def row(y, groups):
+    """groups: list of (kind, tokens, positions, dashed). returns dict name->(x1,x2) and per-token x."""
+    x = X0; spans = {}; xs = []
+    for kind, toks, poss, dashed, name in groups:
+        gx = x
+        for t, p in zip(toks, poss):
+            w = cw(t); chip(x, y, w, CH, kind, t, dashed)
+            if p is not None: text(x + w / 2, y + CH + 12, str(p), 10.5, MUTED, "middle")
+            xs.append((name, x + w / 2)); x += w + GAP
+        spans[name] = (gx, x - GAP); x += GGAP - GAP
+    return spans, xs
+add(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="446" viewBox="0 0 {W} 446" font-family=\'{SANS}\'>')
+add('<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f7d3f"/></marker>'
+    '<marker id="arrs" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2f7d3f"/></marker><marker id="arrg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a857b"/></marker></defs>')
+# ---- step 1: previous prompt, cached, with position ids
+y1 = 22
+text(12, y1 + 17, "① previous prompt", 12, INK, "start", weight="600"); text(12, y1 + 31, "cached with position ids", 10.5, MUTED)
+A = ["this", "is", "sentence", "A"]; B = ["this", "is", "sentence", "B"]; C = ["this", "is", "sentence", "C"]; Bp = ["compacted", "B"]
+sp1, xs1 = row(y1, [("prev", A, range(0, 4), False, "A"), ("prev", B, range(4, 8), False, "B"), ("prev", C, range(8, 12), False, "C")])
+for n, lab in (("A", em("A")), ("B", em("B")), ("C", em("C"))):
+    x1, x2 = sp1[n]; bracket(x1, x2, y1 + CH + 24, COL["prev"][1], None, lab + ' <tspan font-size="11">· one KV entry per token</tspan>' if n == "C" else lab)
+# ---- step 2: new prompt diffed; C shifted
+y2 = 154
+text(12, y2 + 17, "② new prompt", 12, INK, "start", weight="600"); text(12, y2 + 31, "diffed against ①", 10.5, MUTED)
+sp2, xs2 = row(y2, [("hit", A, range(0, 4), False, "A"), ("pre", Bp, range(4, 6), False, "B′"), ("reu", C, range(6, 10), False, "C")])
+# first-mismatch cross
+bx = sp2["B′"][0]; text(bx - 8, y2 + CH / 2 + 5, "×", 13, ROSE, "middle", weight="700")
+bracket(*sp2["A"], y2 + CH + 24, COL["hit"][1], None, em("A") + " · hit prefix cache")
+bracket(*sp2["B′"], y2 + CH + 24, COL["pre"][1], None, em("B′") + " · prefilled")
+bracket(*sp2["C"], y2 + CH + 24, COL["reu"][1], None, em("C") + " · KV entries relocated")
+# shift arrows from old C chips to new C chips
+oldC = [x for n, x in xs1 if n == "C"]; newC = [x for n, x in xs2 if n == "C"]
+for xo, xn in zip(oldC, newC):
+    add(f'<path d="M{xo:.1f},{y1+CH+54:.1f} C{xo:.1f},{y1+CH+80:.1f} {xn:.1f},{y2-30:.1f} {xn:.1f},{y2-3:.1f}" fill="none" stroke="#2f7d3f" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arr)" opacity="0.85"/>')
+# delta label to the right of the arrows
+dx = X0
+text(dx, y1 + CH + 64, "Δ = |" + em("B′") + "| − |" + em("B") + "| = 2 − 4 = −2", 11.5, "#2f7d3f", "start", weight="600")
+text(dx, y1 + CH + 79, "every token of " + em("C") + " moves by Δ positions, cache entries included", 10.5, MUTED)
+# ---- step 3: why one rotation by Δ relocates a cached entry, in every full-attention layer
+y3 = 266
+text(12, y3 + 17, "③ relocate", 12, INK, "start", weight="600")
+text(12, y3 + 31, "one rotation per key,", 10.5, MUTED); text(12, y3 + 44, "every layer", 10.5, MUTED)
+def sb(s): return f'<tspan baseline-shift="sub" font-size="9">{s}</tspan>'
+# left card: the rotary map R(p) and its composition rule
+lx, lw, lh = X0, 336, 162
+add(f'<rect x="{lx}" y="{y3}" width="{lw}" height="{lh}" rx="6" fill="#faf9f6" stroke="#8a857b" stroke-width="1"/>')
+text(lx + 12, y3 + 20, "rotary position encoding", 11.5, MUTED)
+text(lx + 12, y3 + 44, "R(p) rotates each pair (k" + sb("j") + ", k" + sb("j+d") + ") by p·θ" + sb("j"), 12.5, INK, family=PROSE, style="italic")
+# small rotation glyph, top right of the card
+# glyph: a vector rotated by p·θ_j; the angle arrow runs outside the circle so it stays legible
+gx, gy, gr = lx + lw - 34, y3 + 19, 9
+add(f'<circle cx="{gx}" cy="{gy}" r="{gr}" fill="none" stroke="#8a857b" stroke-width="1"/>')
+add(f'<line x1="{gx}" y1="{gy}" x2="{gx+gr}" y2="{gy}" stroke="#8a857b" stroke-width="1.2"/>')
+add(f'<line x1="{gx}" y1="{gy}" x2="{gx+gr*0.5:.1f}" y2="{gy-gr*0.87:.1f}" stroke="#2f7d3f" stroke-width="1.6"/>')
+ro = gr + 4
+add(f'<path d="M{gx+ro:.1f},{gy} A{ro},{ro} 0 0 0 {gx+ro*0.5:.1f},{gy-ro*0.87:.1f}" fill="none" stroke="#2f7d3f" stroke-width="1" marker-end="url(#arrs)"/>')
+text(lx + 12, y3 + 70, "rotations add their angles:", 11, MUTED)
+text(lx + 12, y3 + 92, "R(a) · R(b) = R(a + b)", 13, INK, family=PROSE, style="italic")
+text(lx + 12, y3 + 118, "⇒ R(p" + sb("new") + ") = R(Δ) · R(p" + sb("old") + "),  Δ = p" + sb("new") + " − p" + sb("old"), 12.5, "#2f7d3f", family=PROSE, style="italic")
+text(lx + 12, y3 + 138, "the cached key already holds R(p" + sb("old") + ")·k,", 10.5, MUTED)
+text(lx + 12, y3 + 152, "so one extra rotation by Δ moves it to p" + sb("new"), 10.5, MUTED)
+# arrow
+ax = lx + lw + 10; add(f'<path d="M{ax},{y3+lh/2} H{ax+36}" stroke="#2f7d3f" stroke-width="1.6" marker-end="url(#arr)"/>')
+text(ax + 18, y3 + lh / 2 - 9, "apply", 10.5, "#2f7d3f", "middle", weight="600")
+# right: stack of full-attention layer cards with the same formula
+rx, rw, rh = ax + 50, W - (ax + 50) - 12, 116
+for off in (16, 8, 0):
+    add(f'<rect x="{rx+off*0.9:.1f}" y="{y3+18-off:.1f}" width="{rw-off*0.9:.1f}" height="{rh}" rx="6" fill="{COL["reu"][0]}" stroke="{COL["reu"][1]}" stroke-width="1" opacity="{0.55 if off else 1}"/>')
+cy = y3 + 18
+text(rx + 12, cy + 20, "full-attention layer ℓ = 1 … 16", 11.5, COL["reu"][1], weight="600")
+text(rx + 12, cy + 46, "K" + sb("ℓ,new") + " = R(Δ) · K" + sb("ℓ,cached"), 13, INK, family=PROSE, style="italic")
+text(rx + 12, cy + 70, "V" + sb("ℓ,new") + " = V" + sb("ℓ,cached"), 13, INK, family=PROSE, style="italic")
+text(rx + 12, cy + 92, "same formula in every layer;", 10.5, MUTED); text(rx + 12, cy + 106, "values carry no position", 10.5, MUTED)
+text(rx + rw - 2, y3 + lh + 2, "written to new slots after " + em("B′"), 10.5, MUTED, "end")
+add('</svg>')
+svg = "\n".join(out)
+import sys
+open(sys.argv[1], "w").write(svg); print("wrote", sys.argv[1], len(svg))
