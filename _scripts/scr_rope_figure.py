@@ -54,11 +54,11 @@ bracket(*sp2["C"], y2 + CH + 24, COL["reu"][1], None, em("C") + " · KV entries 
 # shift arrows from old C chips to new C chips
 oldC = [x for n, x in xs1 if n == "C"]; newC = [x for n, x in xs2 if n == "C"]
 for xo, xn in zip(oldC, newC):
-    add(f'<path d="M{xo:.1f},{y1+CH+48:.1f} C{xo:.1f},{y1+CH+76:.1f} {xn:.1f},{y2-30:.1f} {xn:.1f},{y2-3:.1f}" fill="none" stroke="#2f7d3f" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arr)" opacity="0.85"/>')
+    add(f'<path d="M{xo:.1f},{y1+CH+54:.1f} C{xo:.1f},{y1+CH+80:.1f} {xn:.1f},{y2-30:.1f} {xn:.1f},{y2-3:.1f}" fill="none" stroke="#2f7d3f" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arr)" opacity="0.85"/>')
 # delta label to the right of the arrows
 dx = X0
 text(dx, y1 + CH + 64, "Δ = |" + em("B′") + "| − |" + em("B") + "| = 2 − 4 = −2", 11.5, "#2f7d3f", "start", weight="600")
-text(dx, y1 + CH + 79, "every token of " + em("C") + " moves by Δ positions; its cached KV entries move with it", 10.5, MUTED)
+text(dx, y1 + CH + 79, "every token of " + em("C") + " moves by Δ positions, cache entries included", 10.5, MUTED)
 # ---- step 3: why one rotation by Δ relocates a cached entry, in every full-attention layer
 y3 = 266
 text(12, y3 + 17, "③ relocate", 12, INK, "start", weight="600")
