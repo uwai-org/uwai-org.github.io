@@ -1,0 +1,3 @@
+# Overrides for the draft preview site (uwai-org/draft, served at wai-org.com/draft/).
+# Used only by _scripts/deploy_draft.sh; the live site never reads this file.
+noindex: true
