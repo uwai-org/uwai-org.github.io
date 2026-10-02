@@ -93,7 +93,7 @@ The hit rate does drop with in-the-middle edits and incurs re-prefilling of the 
 
 ## Suffix Cache Reuse
 
-Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But we ask: **can we adapt serving engines for AI's convenience**, especially given the trend toward recursive self-improvement (RSI)? To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient on the system side.
+Prefix cache reuse has been the tradition in serving engines because context has always been append-only. But we ask: **can we adapt serving engines for AI's convenience?** To that end, we propose a simple yet effective method, Suffix Cache Reuse, to make CLM serving even more efficient on the system side.
 
 ::::: {.tok-viz .tok-viz-fig}
 ::: {.tok-row label="before the edit"}
