@@ -141,18 +141,19 @@ We perform an end-to-end evaluation of SCR on BrowseComp-Plus with the [CLM harn
 
 [^impl]: Our implementation of Suffix Cache Reuse is available at [facebookresearch/context-language-models/suffix_cache_reuse](https://github.com/facebookresearch/context-language-models/tree/main/suffix_cache_reuse).
 
-![Suffix Cache Reuse on BrowseComp-Plus with a Qwen3.6-27B CLM. All 830 questions were served both ways. Left: task accuracy. Middle: compute per question, split into prefill and decode. Right: where the prompt tokens came from, over all turns and over the turns right after a context edit.]({{ '/assets/img/clm/scr-bcp830-results.png' | relative_url }})
+![Suffix Cache Reuse on BrowseComp-Plus with a Qwen3.6-27B CLM. All 830 questions were served both ways, with three seeds each. Left: task accuracy. Middle: compute per question, split into prefill and decode. Right: where the prompt tokens came from, over all turns and over the turns right after a context edit.]({{ '/assets/img/clm/scr-bcp830-results.png' | relative_url }})
 
-Accuracy is identical, 60.2% both ways, while compute drops from 10.98 to 7.14 PFLOPs per question. On the turns right after an edit, SCR serves an extra 28.2% of the prompt from relocated cache that standard serving would have recomputed. CLMs were already cheaper than the baselines under standard serving, through better context management alone; SCR brings their serving cost down to 65% of that.
+Averaged over three seeds, accuracy is on par (59.0% with standard serving, 60.6% with SCR), while compute drops from 11.00 to 7.21 PFLOPs per question. On the turns right after an edit, SCR serves an extra 28.1% of the prompt from relocated cache that standard serving would have recomputed. The savings show up in wall-clock time too: each question finishes 10% faster (874 s to 786 s). CLMs were already cheaper than the baselines under standard serving, through better context management alone; SCR brings their serving cost down to 65% of that.
 
 **Bonus: reasoning-token stripping is a context edit too.** Other cache misses arise from reasoning-token stripping in some chat-template serving. For models such as Qwen3.6, earlier reasoning blocks are removed from subsequent prompts, forcing the unchanged suffix to be prefilled again. SCR reuses this suffix cache as well. In fact, most of SCR’s extra reuse comes from stripped reasoning rather than CLM edits. The figure below shows a decomposition of the tokens hit by Suffix Cache Reuse.
 
-![Where Suffix Cache Reuse finds reusable cache on BrowseComp-Plus, over all turns and over the turns right after an edit. Qwen3.6-27B, 830 questions.]({{ '/assets/img/clm/scr-strip-savings.png' | relative_url }})
+![Where Suffix Cache Reuse finds reusable cache on BrowseComp-Plus, over all turns and over the turns right after an edit. Qwen3.6-27B, 830 questions, three seeds.]({{ '/assets/img/clm/scr-strip-savings.png' | relative_url }})
 
 **Improvement space for cache misses.** We also looked at the unchanged tokens that are still prefilled with SCR. SCR removes most re-prefilling of unchanged suffixes after an edit. Much of the remaining overhead comes from unchanged prefixes that standard SGLang fails to reuse efficiently for hybrid models, because linear-attention states are cached only at request boundaries. This leaves substantial room for improvement: finer-grained recurrent-state checkpoints could increase cache hit rates for both standard prefix caching and SCR. More broadly, serving models with editable context opens many new systems research directions.
 
 ![Remaining re-prefill under standard serving and under Suffix Cache Reuse on BrowseComp-Plus, split by why each token was prefilled. Same runs as above.]({{ '/assets/img/clm/scr-prefill-split.png' | relative_url }})
 
+**Suffix Cache Reuse in vLLM.** We also ported SCR to vLLM as a plugin, without modifying vLLM itself. On a multi-turn editing workload with 8 to 16 concurrent conversations, it raises throughput by 1.4 to 1.6 times and cuts the median time to first token by 32% to 54%. On BrowseComp-Plus it lowers compute per question by 25% and wall-clock time per question by 12%, again with accuracy on par.
 
 ## Related work
 
