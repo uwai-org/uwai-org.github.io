@@ -153,7 +153,25 @@ Averaged over three seeds, accuracy is on par (59.0% with standard serving, 60.6
 
 ![Remaining re-prefill under standard serving and under Suffix Cache Reuse on BrowseComp-Plus, split by why each token was prefilled. Same runs as above.]({{ '/assets/img/clm/scr-prefill-split.png' | relative_url }})
 
-**Suffix Cache Reuse in vLLM.** We also ported SCR to vLLM as a plugin, without modifying vLLM itself. On a multi-turn editing workload with 8 to 16 concurrent conversations, it raises throughput by 1.4 to 1.6 times and cuts the median time to first token by 32% to 54%. On BrowseComp-Plus it lowers compute per question by 25% and wall-clock time per question by 12%, again with accuracy on par.
+**Suffix Cache Reuse in vLLM.** We also ported SCR to vLLM as a plugin, without modifying vLLM itself, and repeated the BrowseComp-Plus comparison on both engines: Qwen3.6-27B, all 830 questions, three seeds, with standard serving and SCR running side by side on the same node. On both engines, SCR lowers compute and wall-clock time per question with accuracy on par.
+
+| Engine | Serving | Accuracy (%) | PFLOPs per question | Time per question (s) |
+| --- | --- | --- | --- | --- |
+| SGLang | Standard | 59.0 | 11.00 | 874 |
+| SGLang | SCR | **60.6** | **7.21** (−34.5%) | **786** (−10.1%) |
+| vLLM | Standard | 58.8 | 9.86 | 554 |
+| vLLM | SCR | **58.9** | **7.42** (−24.7%) | **485** (−12.5%) |
+
+Time per question covers the whole trajectory, from the first request to the final answer, and is compared within each engine, since the two engines run with different server settings.
+
+SCR also speeds up serving itself. On a multi-turn editing workload, where each conversation starts from a document of about 11K tokens and 60% of later turns delete or rewrite an earlier section, SCR on vLLM raises request throughput by 1.4 to 1.6 times and cuts the median time to first token by 32% to 54% (one H200 per server).
+
+| Model | Concurrent conversations | Requests per second, standard → SCR | Median time to first token, standard → SCR |
+| --- | --- | --- | --- |
+| Qwen3-8B | 8 | 3.58 → **5.82** | 0.61 s → **0.28 s** |
+| Qwen3-8B | 16 | 4.06 → **6.04** | 0.60 s → **0.29 s** |
+| Qwen3.6-27B | 8 | 1.14 → **1.78** | 1.80 s → **1.09 s** |
+| Qwen3.6-27B | 16 | 1.28 → **1.79** | 2.12 s → **1.44 s** |
 
 ## Related work
 
