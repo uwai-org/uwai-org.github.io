@@ -153,7 +153,7 @@ Averaged over three seeds, accuracy is on par (59.0% with standard serving, 60.6
 
 ![Remaining re-prefill under standard serving and under Suffix Cache Reuse on BrowseComp-Plus, split by why each token was prefilled. Same runs as above.]({{ '/assets/img/clm/scr-prefill-split.png' | relative_url }})
 
-**Suffix Cache Reuse in vLLM.** We also ported SCR to vLLM as a plugin, without modifying vLLM itself, and repeated the BrowseComp-Plus comparison on both engines: Qwen3.6-27B, all 830 questions, three seeds, with standard serving and SCR running side by side on the same node. On both engines, SCR lowers compute and wall-clock time per question with accuracy on par.
+**Suffix Cache Reuse in vLLM.** We also ported SCR to vLLM as a [plugin](https://github.com/facebookresearch/context-language-models/tree/main/suffix_cache_reuse/vllm), without modifying vLLM itself, and repeated the BrowseComp-Plus comparison on both engines: Qwen3.6-27B, all 830 questions, three seeds, with standard serving and SCR running side by side on the same node. On both engines, SCR lowers compute and wall-clock time per question with accuracy on par.
 
 ![Suffix Cache Reuse on SGLang and vLLM, BrowseComp-Plus with Qwen3.6-27B, 830 questions, three seeds. Arrows mark the better direction.]({{ '/assets/img/clm/scr-engines-bcp.png' | relative_url }})
 
