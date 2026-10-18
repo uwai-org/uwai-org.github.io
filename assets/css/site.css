@@ -903,3 +903,95 @@ pre > code.sourceCode .bu { color: #1f5fbf; }
 main:has(.post-hero) a { color: #1a7fd4; }
 main:has(.post-hero) a:hover { color: #0b5fa8; }
 main:has(.post-hero) label.margin-toggle { color: #1a7fd4; }
+
+/* ----- TMax v1.1 post (charts: assets/js/tmax-v11-charts.js) ------------ */
+.tmax-chart,
+.tmax-tabs {
+  margin: calc(1.25 * var(--line-height)) 0;
+}
+.tmax-chart > p.chart-caption,
+.tmax-tabs > p {
+  margin-top: 8px;
+  font-size: var(--figcaption-font-size);
+  line-height: var(--figcaption-line-height);
+  color: var(--color-text-secondary);
+}
+.tmax-tabs.ready > .tab { display: none; }
+.tmax-tabs.ready > .tab.on { display: block; }
+.tmax-tabs .tab > p { margin-top: 0; }
+
+/* Release box: artifact placeholders until the links exist. */
+.release {
+  margin: var(--line-height) 0;
+  padding: calc(0.6 * var(--line-height)) calc(1 * var(--line-height));
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 10px;
+  font-family: var(--font-family-sans);
+  font-size: 14px;
+  line-height: 22px;
+}
+.release > p { margin: 0 0 10px; color: var(--color-text-secondary); }
+.release .release-label { font-weight: 700; color: var(--color-text); margin-right: 6px; }
+.release-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 20px;
+}
+.release-card p { margin: 0 0 6px; }
+.release-card p:first-child { font-weight: 700; }
+.release a.dataset-tag { display: inline-block; margin: 0 4px 6px 0; color: #b5530b; }
+.release a.dataset-tag.tbd { border-style: dashed; opacity: 0.6; }
+
+/* Row of headline numbers. */
+.stat-row > p {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: var(--line-height) 0;
+}
+.stat-row .stat {
+  display: block;
+  padding: 10px 8px;
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 8px;
+  text-align: center;
+  font-family: var(--font-family-sans);
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--color-text-secondary);
+}
+.stat-row .stat-num {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  color: #B85C38;
+}
+
+/* Real auditor verdicts, one per tab. */
+.tmax-tabs.audit-examples {
+  padding: 14px 18px 12px;
+  border: 1px solid var(--color-border-heavy);
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.45);
+}
+.audit-examples blockquote {
+  margin: 8px 0;
+  font-size: 15px;
+  line-height: 23px;
+}
+.audit-examples .fix { font-family: var(--font-family-sans); font-size: 13.5px; line-height: 20px; }
+.audit-examples .fix strong { color: #B85C38; }
+.audit-examples .fix.dropped strong { color: var(--color-text-secondary); }
+
+/* v1.0 -> v1.1 summary table. */
+.changes table { font-size: 15px; }
+.changes td:first-child { font-family: var(--font-family-sans); font-size: 13.5px; color: var(--color-text-secondary); white-space: nowrap; }
+.changes td:last-child { font-weight: 600; }
+
+@media screen and (max-width: 600px) {
+  .release-grid { grid-template-columns: 1fr; }
+  .stat-row > p { grid-template-columns: repeat(2, 1fr); }
+  .changes td:first-child { white-space: normal; }
+}
