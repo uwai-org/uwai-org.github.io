@@ -918,6 +918,12 @@ main:has(.post-hero) label.margin-toggle { color: #1a7fd4; }
 }
 .tmax-tabs.ready > .tab { display: none; }
 .tmax-tabs.ready > .tab.on { display: block; }
+figure > video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--figcaption-gap);
+}
 .tmax-tabs .tab > p { margin-top: 0; }
 
 /* Release box: artifact placeholders until the links exist. */
