@@ -143,6 +143,40 @@
     draw();
   };
 
+  // ------------------------------------------------------------------ Generalization: other tasks and other harnesses (9B)
+  CHARTS.generalization = function (d, plot) {
+    var rows = d.generalization.rows, GAP = 0.6;
+    var pos = [], p = 0;
+    rows.forEach(function (r, i) {
+      if (i && r.group !== rows[i - 1].group) p += GAP;
+      pos.push(p++);
+    });
+    plot.style.height = "280px";
+
+    function dots(key, name, color) {
+      return {
+        type: "scatter", mode: "markers", name: name, y: pos, x: rows.map(function (r) { return r[key][0]; }),
+        marker: { color: color, size: 12, line: { color: "#fff", width: 1.5 } },
+        customdata: rows.map(function (r) { return [r.label, r[key][1]]; }),
+        hovertemplate: "<b>" + name + "</b><br>%{customdata[0]}: %{x:.1f} ± %{customdata[1]:.1f}<extra></extra>"
+      };
+    }
+    var link = { type: "scatter", mode: "lines", showlegend: false, hoverinfo: "skip", line: { color: AXIS, width: 3 }, x: [], y: [] };
+    rows.forEach(function (r, i) { link.x.push(r.base[0], r.tmax[0], null); link.y.push(pos[i], pos[i], null); });
+    var ann = rows.map(function (r, i) {
+      return { x: r.tmax[0], y: pos[i], xanchor: "left", xshift: 10, showarrow: false,
+               text: "+" + (r.tmax[0] - r.base[0]).toFixed(1), font: { size: 12, color: TMAX } };
+    });
+    Plotly.react(plot, [link, dots("base", "Qwen3.5-9B", BASE), dots("tmax", "TMax-v1.1-9B", TMAX)], layout({
+      annotations: ann,
+      margin: { l: 16, r: 36, t: 30, b: 48 },
+      legend: { orientation: "h", x: 0, xanchor: "left", y: 1.02, yanchor: "bottom", font: { size: 12 } },
+      xaxis: axis({ range: [20, 100], dtick: 20, title: "Accuracy (%)" }),
+      yaxis: axis({ showgrid: false, showline: false, ticks: "", tickvals: pos, ticktext: rows.map(function (r) { return r.label; }),
+                    range: [p - 1 + 0.6, -0.6], tickfont: { size: 12.5, color: INK } })
+    }), CONFIG);
+  };
+
   // ------------------------------------------------------------------ RL dataset comparison (Qwen3.5-9B)
   CHARTS.datasets = function (d, plot, controls) {
     var D = d.datasets;

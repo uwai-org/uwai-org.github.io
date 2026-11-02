@@ -125,6 +125,16 @@
       }
     ]
   },
+  "generalization": {
+    "note": "Qwen3.5-9B vs. TMax-v1.1-9B. SWE-bench Verified and AIME '24/'25 use our harness; the TB Lite rows use harnesses not used in training. Values are [mean, standard error].",
+    "rows": [
+      { "label": "SWE-bench Verified", "group": "tasks", "base": [46.2, 0.8], "tmax": [55.3, 0.7] },
+      { "label": "AIME '24/'25", "group": "tasks", "base": [72.2, 2.3], "tmax": [93.3, 1.5] },
+      { "label": "TB Lite · OpenHands", "group": "harnesses", "base": [29.0, 1.6], "tmax": [42.7, 1.7] },
+      { "label": "TB Lite · mini-SWE-agent", "group": "harnesses", "base": [44.9, 2.0], "tmax": [57.8, 2.0] },
+      { "label": "TB Lite · Terminus-2", "group": "harnesses", "base": [37.9, 2.2], "tmax": [46.1, 2.1] }
+    ]
+  },
   "audit": {
     "total": 14601,
     "kept": 13565,
