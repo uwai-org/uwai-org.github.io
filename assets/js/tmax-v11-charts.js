@@ -143,67 +143,58 @@
     draw();
   };
 
-  // ------------------------------------------------------------------ Generalization: other tasks and other harnesses (9B)
-  CHARTS.generalization = function (d, plot) {
-    var rows = d.generalization.rows, GAP = 0.6;
-    var pos = [], p = 0;
-    rows.forEach(function (r, i) {
-      if (i && r.group !== rows[i - 1].group) p += GAP;
-      pos.push(p++);
-    });
-    plot.style.height = "280px";
+  // ------------------------------------------------------------------ Generalization (9B): other tasks, and TB Lite under other harnesses
+  function baseVsTmax(rows, plot, o) {
+    plot.style.height = "320px";
+    groupedBars(plot, rows.map(function (r) { return r.label; }), [
+      { name: "Qwen3.5-9B", y: rows.map(function (r) { return r.base[0]; }), se: rows.map(function (r) { return r.base[1]; }), color: BASE },
+      { name: "TMax-v1.1-9B", y: rows.map(function (r) { return r.tmax[0]; }), se: rows.map(function (r) { return r.tmax[1]; }), color: TMAX, strong: true }
+    ], o);
+  }
 
-    function dots(key, name, color) {
-      return {
-        type: "scatter", mode: "markers", name: name, y: pos, x: rows.map(function (r) { return r[key][0]; }),
-        marker: { color: color, size: 12, line: { color: "#fff", width: 1.5 } },
-        customdata: rows.map(function (r) { return [r.label, r[key][1]]; }),
-        hovertemplate: "<b>" + name + "</b><br>%{customdata[0]}: %{x:.1f} ± %{customdata[1]:.1f}<extra></extra>"
-      };
-    }
-    var link = { type: "scatter", mode: "lines", showlegend: false, hoverinfo: "skip", line: { color: AXIS, width: 3 }, x: [], y: [] };
-    rows.forEach(function (r, i) { link.x.push(r.base[0], r.tmax[0], null); link.y.push(pos[i], pos[i], null); });
-    var ann = rows.map(function (r, i) {
-      return { x: r.tmax[0], y: pos[i], xanchor: "left", xshift: 10, showarrow: false,
-               text: "+" + (r.tmax[0] - r.base[0]).toFixed(1), font: { size: 12, color: TMAX } };
-    });
-    Plotly.react(plot, [link, dots("base", "Qwen3.5-9B", BASE), dots("tmax", "TMax-v1.1-9B", TMAX)], layout({
-      annotations: ann,
-      margin: { l: 16, r: 36, t: 30, b: 48 },
-      legend: { orientation: "h", x: 0, xanchor: "left", y: 1.02, yanchor: "bottom", font: { size: 12 } },
-      xaxis: axis({ range: [20, 100], dtick: 20, title: "Accuracy (%)" }),
-      yaxis: axis({ showgrid: false, showline: false, ticks: "", tickvals: pos, ticktext: rows.map(function (r) { return r.label; }),
-                    range: [p - 1 + 0.6, -0.6], tickfont: { size: 12.5, color: INK } })
-    }), CONFIG);
+  CHARTS.othertasks = function (d, plot) { baseVsTmax(d.generalization.tasks, plot); };
+
+  CHARTS.harnesses = function (d, plot) {
+    var rows = d.generalization.harnesses;
+    baseVsTmax(rows, plot, { yTitle: "TB Lite accuracy (%)", hoverGroups: rows.map(function (r) { return "TB Lite · " + r.label; }) });
   };
 
   // ------------------------------------------------------------------ RL dataset comparison (Qwen3.5-9B)
   CHARTS.datasets = function (d, plot, controls) {
     var D = d.datasets;
     var COL = { prior: PRIOR, ours: TMAX, prerepair: PEACH, selfgen: PURPLE };
-    var st = { b: "TB Lite", view: "score", show: "all" };
-    seg(controls, "Benchmark", opts(["TB Lite", "TB 2.1"]), st.b, function (k) { st.b = k; draw(); });
+    var st = { b: "Average", view: "score", show: "all" };
+    seg(controls, "Benchmark", opts(["Average", "TB Lite", "TB 2.1"]), st.b, function (k) { st.b = k; draw(); });
     seg(controls, "Show", [{ key: "all", label: "All" }, { key: "main", label: "Prior datasets vs. ours" }], st.show,
         function (k) { st.show = k; draw(); });
     seg(controls, "Plot", [{ key: "score", label: "Score" }, { key: "gain", label: "Gain over base" }], st.view,
         function (k) { st.view = k; draw(); });
 
+    // [mean, se] on the selected benchmark. The average is rounded half-up from the reported tenths so labels
+    // and hovers agree, and its se treats the two benchmarks' errors as independent.
+    function score(r) {
+      if (st.b !== "Average") return r[st.b];
+      var a = r["TB Lite"], b = r["TB 2.1"];
+      return [Math.round((Math.round(a[0] * 10) + Math.round(b[0] * 10)) / 2) / 10, Math.sqrt(a[1] * a[1] + b[1] * b[1]) / 2];
+    }
+
     function draw() {
       var rows = D.rows.filter(function (r) { return st.show === "all" || r.kind === "prior" || r.kind === "ours"; });
-      rows = rows.slice().sort(function (a, b) { return a[st.b][0] - b[st.b][0] || (a.kind === "prior") - (b.kind === "prior"); });
-      var base = D.base[st.b][0], gain = st.view === "gain";
-      var x = rows.map(function (r) { return gain ? r[st.b][0] - base : r[st.b][0]; });
+      rows = rows.slice().sort(function (a, b) { return score(a)[0] - score(b)[0] || (a.kind === "prior") - (b.kind === "prior"); });
+      var avg = st.b === "Average", s = rows.map(score);
+      var base = score(D.base)[0], gain = st.view === "gain";
+      var x = s.map(function (v) { return gain ? v[0] - base : v[0]; });
       var names = rows.map(function (r) { return r.kind === "prior" ? r.name : "<b>" + r.name + "</b>"; });
       var height = Math.max(360, 30 * rows.length + 90);
       plot.style.height = height + "px";
-      var se = rows.map(function (r) { return r[st.b][1]; });
+      var se = s.map(function (v) { return v[1]; });
       var traces = [{
         type: "bar", orientation: "h", y: names, x: x, showlegend: false,
         marker: { color: rows.map(function (r) { return COL[r.kind]; }) },
         error_x: { type: "data", array: se, thickness: 1, width: 3, color: "rgba(0,0,0,0.3)" },
-        customdata: rows.map(function (r) { return [r.name, r[st.b][0], r[st.b][1], r[st.b][0] - base]; }),
-        hovertemplate: "<b>%{customdata[0]}</b><br>" + st.b + ": %{customdata[1]:.1f} ± %{customdata[2]:.1f}" +
-          "<br>vs. base: %{customdata[3]:+.1f}<extra></extra>"
+        customdata: rows.map(function (r, i) { return [r.name, s[i][0], s[i][1], s[i][0] - base]; }),
+        hovertemplate: "<b>%{customdata[0]}</b><br>" + (avg ? "Average of TB Lite and TB 2.1" : st.b) +
+          ": %{customdata[1]:.1f} ± %{customdata[2]:.1f}<br>vs. base: %{customdata[3]:+.1f}<extra></extra>"
       }];
       var hi = Math.max.apply(null, x.map(function (v, i) { return v + se[i]; }).concat([gain ? 0 : base]));
       var lo = Math.min.apply(null, x.map(function (v, i) { return v - se[i]; }).concat([0]));
@@ -223,7 +214,8 @@
       Plotly.react(plot, traces, layout({
         height: height, margin: { l: 16, r: 40, t: 26, b: 48 }, bargap: 0.3, shapes: shapes, annotations: ann,
         xaxis: axis({ range: [lo < 0 ? lo - 0.12 * (hi - lo) : 0, hi + 0.1 * (hi - lo)],
-                      title: gain ? "Gain over Qwen3.5-9B (points, " + st.b + ")" : st.b + " accuracy (%) after RL on each dataset" }),
+                      title: gain ? "Gain over Qwen3.5-9B (points, " + (avg ? "average of TB Lite and TB 2.1" : st.b) + ")"
+                                  : (avg ? "Average of TB Lite and TB 2.1" : st.b) + " accuracy (%) after RL on each dataset" }),
         yaxis: axis({ showgrid: false, tickfont: { size: 12.5, color: INK } })
       }), CONFIG);
     }

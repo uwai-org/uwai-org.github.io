@@ -1,26 +1,26 @@
 {
-  "_source": "TMax v1.1 paper tables; the 2B and 27B v1.1 sizes rows use the corrected releases from the v1.1 evaluation README in the TMax repo. Values are mean and standard error over three trials per task.",
+  "_source": "TMax v1.1 paper tables; the 2B and 27B sizes rows (base and v1.1) are the paper's keep-thinking reruns with the fixed chat templates. Values are mean and standard error over three trials per task.",
   "sizes": {
     "labels": ["2B", "4B", "9B", "27B"],
     "base_names": ["Qwen3.5-2B", "Qwen3.5-4B", "Qwen3.5-9B", "Qwen3.6-27B"],
     "benchmarks": {
       "TB 2.0": {
         "note": "Daytona sandboxes, all tasks, default Terminal-Bench settings",
-        "base": [1.1, 16.5, 21.0, 42.0],
+        "base": [1.5, 16.5, 21.0, 42.7],
         "v10": [2.9, 18.9, 27.2, 42.7],
         "v11": [9.4, 25.1, 33.0, 44.9]
       },
       "TB 2.1": {
         "note": "88 of 89 tasks on our Apptainer sandbox fleet",
-        "base": [1.9, 15.5, 20.5, 42.8],
-        "base_se": [0.5, 1.5, 1.7, 1.7],
+        "base": [1.9, 15.5, 20.5, 43.6],
+        "base_se": [0.4, 1.5, 1.7, 1.9],
         "v11": [5.3, 24.6, 29.6, 43.9],
         "v11_se": [1.0, 1.8, 1.8, 1.6]
       },
       "TB Lite": {
         "note": "96 of 100 tasks on our Apptainer sandbox fleet",
-        "base": [6.0, 33.6, 49.4, 78.1],
-        "base_se": [0.9, 1.8, 1.9, 1.5],
+        "base": [7.1, 33.6, 49.4, 74.2],
+        "base_se": [1.0, 1.8, 1.9, 1.5],
         "v11": [18.2, 54.3, 65.6, 77.4],
         "v11_se": [1.4, 1.9, 2.0, 1.8]
       }
@@ -126,13 +126,16 @@
     ]
   },
   "generalization": {
-    "note": "Qwen3.5-9B vs. TMax-v1.1-9B. SWE-bench Verified and AIME '24/'25 use our harness; the TB Lite rows use harnesses not used in training. Values are [mean, standard error].",
-    "rows": [
-      { "label": "SWE-bench Verified", "group": "tasks", "base": [46.2, 0.8], "tmax": [55.3, 0.7] },
-      { "label": "AIME '24/'25", "group": "tasks", "base": [72.2, 2.3], "tmax": [93.3, 1.5] },
-      { "label": "TB Lite · OpenHands", "group": "harnesses", "base": [29.0, 1.6], "tmax": [42.7, 1.7] },
-      { "label": "TB Lite · mini-SWE-agent", "group": "harnesses", "base": [44.9, 2.0], "tmax": [57.8, 2.0] },
-      { "label": "TB Lite · Terminus-2", "group": "harnesses", "base": [37.9, 2.2], "tmax": [46.1, 2.1] }
+    "note": "Qwen3.5-9B vs. TMax-v1.1-9B. tasks: SWE-bench Verified and AIME '24/'25 in our harness. harnesses: TB Lite under each harness; only ours was used in training. Values are [mean, standard error].",
+    "tasks": [
+      { "label": "SWE-bench Verified", "base": [46.2, 0.8], "tmax": [55.3, 0.7] },
+      { "label": "AIME '24/'25", "base": [72.2, 2.3], "tmax": [93.3, 1.5] }
+    ],
+    "harnesses": [
+      { "label": "Ours (training)", "base": [49.4, 1.9], "tmax": [65.6, 2.0] },
+      { "label": "OpenHands", "base": [29.0, 1.6], "tmax": [42.7, 1.7] },
+      { "label": "mini-SWE-agent", "base": [44.9, 2.0], "tmax": [57.8, 2.0] },
+      { "label": "Terminus-2", "base": [37.9, 2.2], "tmax": [46.1, 2.1] }
     ]
   },
   "audit": {
