@@ -286,41 +286,51 @@
     ]);
   };
 
-  // ------------------------------------------------------------------ Toy: one group of rollouts, infra failures scored 0 vs. masked
-  CHARTS.fakezero = function (d, plot, controls) {
-    var out = d.fakezero.outcomes, RED = "#c0392b", st = { mode: "zero" };
-    var NAME = { pass: "passed", fail: "failed", infra: "sandbox died" };
+  // ------------------------------------------------------------------ Toy: two rollouts in one group run the same commands; one loses its sandbox
+  CHARTS.twinrollouts = function (d, plot, controls) {
+    var T = d.twinrollouts, out = T.outcomes, st = { mode: "zero" };
+    var END = { pass: ["Hidden tests pass", 1], infra: ["Sandbox lost while the tests ran", 0] };
+    var count = function (k) { return out.filter(function (o) { return o === k; }).length; };
+    var fmt = function (a) { var r = Math.round(a * 100) / 100; return (r > 0 ? "+" : r < 0 ? "−" : "") + Math.abs(r).toFixed(2); };
     seg(controls, "Sandbox failures are", [{ key: "zero", label: "Scored as 0 (v1.0)" }, { key: "mask", label: "Masked (v1.1)" }], st.mode,
         function (k) { st.mode = k; draw(); });
-    plot.style.height = "320px";
+    plot.classList.add("tr-plot");
 
     function draw() {
       var mask = st.mode === "mask";
       var valid = out.filter(function (o) { return !(mask && o === "infra"); });
       var mean = valid.filter(function (o) { return o === "pass"; }).length / valid.length;
-      var labels = out.map(function (o, i) { return "<b>" + (i + 1) + "</b><br><span style='font-size:11px;color:" + (o === "infra" ? RED : MUTED) + "'>" + NAME[o] + "</span>"; });
-      var adv = out.map(function (o) { return mask && o === "infra" ? null : (o === "pass" ? 1 : 0) - mean; });
-      var ann = out.map(function (o, i) {
-        if (adv[i] === null) return { x: i, y: 0, yanchor: "bottom", yshift: 4, showarrow: false, text: "masked", font: { size: 12, color: RED } };
-        return { x: i, y: adv[i], yanchor: adv[i] >= 0 ? "bottom" : "top", yshift: adv[i] >= 0 ? 2 : -2, showarrow: false,
-                 text: (adv[i] >= 0 ? "+" : "") + adv[i].toFixed(2), font: { size: 12, color: o === "infra" ? RED : MUTED } };
+      var adv = T.pair.map(function (i) { return mask && out[i] === "infra" ? null : (out[i] === "pass" ? 1 : 0) - mean; });
+      var live = adv.filter(function (a) { return a !== null; });
+      var net = live.reduce(function (s, a) { return s + a; }, 0);
+
+      plot.textContent = "";
+      plot.appendChild(el("p", "tr-note", "Two rollouts from a group of " + out.length + " (" + count("pass") + " passed, " + count("fail") + " failed, " +
+        count("infra") + " lost their sandbox). Group mean over " + (mask ? "the " + valid.length + " valid" : "all " + out.length) + " rollouts = " + mean.toFixed(2) + "."));
+
+      var cols = el("div", "tr-cols");
+      T.pair.forEach(function (i, k) {
+        var a = adv[k], col = el("div", "tr-col " + (a === null ? "masked" : a >= 0 ? "up" : "down"));
+        col.appendChild(el("div", "tr-head", "Rollout " + (i + 1)));
+        var cmds = el("ol", "tr-cmds");
+        T.commands.forEach(function (c) { cmds.appendChild(el("li", null, c)); });
+        col.appendChild(cmds);
+        var end = el("div", "tr-end " + out[i]);
+        end.appendChild(el("span", null, END[out[i]][0]));
+        end.appendChild(el("b", null, "reward " + END[out[i]][1]));
+        col.appendChild(end);
+        col.appendChild(el("div", "tr-adv", a === null ? "Masked: no gradient" : "Advantage " + fmt(a) + " on every command"));
+        cols.appendChild(col);
       });
-      ann.push({ xref: "paper", yref: "paper", x: 0, y: 1, xanchor: "left", yanchor: "top", showarrow: false, align: "left",
-                 font: { size: 11.5, color: MUTED },
-                 text: mask ? "Group mean over the 6 valid rollouts = " + mean.toFixed(2) + ". The two lost rollouts carry no gradient."
-                            : "Group mean over all 8 rollouts = " + mean.toFixed(2) + ". The two lost rollouts are pushed down like real failures." });
-      Plotly.react(plot, [{
-        type: "bar", x: out.map(function (_, i) { return i; }), y: adv, width: 0.6, showlegend: false,
-        marker: { color: out.map(function (o) { return o === "pass" ? GREEN : o === "fail" ? BASE : RED; }) },
-        customdata: out.map(function (o) { return NAME[o]; }),
-        hovertemplate: "Rollout %{x}: %{customdata}<br>advantage %{y:+.2f}<extra></extra>"
-      }], layout({
-        annotations: ann, margin: { l: 64, r: 16, t: 28, b: 56 },
-        shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: 0, y1: 0, line: { color: INK, width: 1 } }],
-        xaxis: axis({ showgrid: false, showline: false, ticks: "", tickvals: out.map(function (_, i) { return i; }), ticktext: labels,
-                      range: [-0.6, out.length - 0.4], tickfont: { size: 12.5, color: INK } }),
-        yaxis: axis({ range: [-0.85, 0.85], title: "Advantage (reward − group mean)", zeroline: false })
-      }), CONFIG);
+      plot.appendChild(cols);
+
+      var sum = live.map(function (a, j) { return j ? (a < 0 ? " − " : " + ") + Math.abs(a).toFixed(2) : fmt(a); }).join("") + (live.length > 1 ? " = " + fmt(net) : "");
+      var p = el("p", "tr-net");
+      p.appendChild(el("span", null, "Net push on these " + T.commands.length + " commands: "));
+      p.appendChild(el("b", null, sum));
+      p.appendChild(el("span", null, mask ? ". Rollout " + (T.pair[1] + 1) + " drops out, so the commands that solved the task are reinforced."
+                                          : ". The commands that solved the task get no reinforcement."));
+      plot.appendChild(p);
     }
     draw();
   };
