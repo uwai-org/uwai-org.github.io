@@ -918,6 +918,7 @@ main:has(.post-hero) label.margin-toggle { color: #1a7fd4; }
 }
 .tmax-tabs.ready > .tab { display: none; }
 .tmax-tabs.ready > .tab.on { display: block; }
+video.tmax-teaser { cursor: pointer; }
 figure > video {
   display: block;
   width: 100%;

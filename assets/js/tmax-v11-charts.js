@@ -1,4 +1,4 @@
-/* Interactive charts and tab panels for the TMax v1.1 post.
+/* Interactive charts, tab panels, and the click-to-replay teaser for the TMax v1.1 post.
  *
  * Markup (Pandoc fenced divs in the post):
  *   ::: {.tmax-chart chart="datasets"}   -> <div class="tmax-chart" data-chart="datasets">
@@ -389,7 +389,12 @@
       .catch(function (e) { plot.textContent = "Could not load chart data for “" + name + "”."; console.error(e); });
   }
 
+  function mountTeaser(video) {
+    video.addEventListener("click", function () { video.currentTime = 0; video.play(); });
+  }
+
   function init() {
+    document.querySelectorAll("video.tmax-teaser").forEach(mountTeaser);
     document.querySelectorAll(".tmax-tabs").forEach(mountTabs);
     var charts = document.querySelectorAll(".tmax-chart[data-chart]");
     if (!charts.length) return;
