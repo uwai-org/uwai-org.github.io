@@ -1,5 +1,5 @@
 {
-  "_source": "TMax v1.1 paper tables. Values are mean and standard error over three trials per task.",
+  "_source": "TMax v1.1 paper tables; the 2B and 27B v1.1 sizes rows use the corrected releases from the v1.1 evaluation README in the TMax repo. Values are mean and standard error over three trials per task.",
   "sizes": {
     "labels": ["2B", "4B", "9B", "27B"],
     "base_names": ["Qwen3.5-2B", "Qwen3.5-4B", "Qwen3.5-9B", "Qwen3.6-27B"],
@@ -8,21 +8,21 @@
         "note": "Daytona sandboxes, all tasks, default Terminal-Bench settings",
         "base": [1.1, 16.5, 21.0, 42.0],
         "v10": [2.9, 18.9, 27.2, 42.7],
-        "v11": [6.4, 25.1, 33.0, 43.8]
+        "v11": [9.4, 25.1, 33.0, 44.9]
       },
       "TB 2.1": {
         "note": "88 of 89 tasks on our Apptainer sandbox fleet",
         "base": [1.9, 15.5, 20.5, 42.8],
         "base_se": [0.5, 1.5, 1.7, 1.7],
-        "v11": [5.3, 24.6, 29.6, 46.2],
-        "v11_se": [0.9, 1.8, 1.8, 1.9]
+        "v11": [5.3, 24.6, 29.6, 43.9],
+        "v11_se": [1.0, 1.8, 1.8, 1.6]
       },
       "TB Lite": {
         "note": "96 of 100 tasks on our Apptainer sandbox fleet",
         "base": [6.0, 33.6, 49.4, 78.1],
         "base_se": [0.9, 1.8, 1.9, 1.5],
-        "v11": [17.8, 54.3, 65.6, 76.9],
-        "v11_se": [1.5, 1.9, 2.0, 1.6]
+        "v11": [18.2, 54.3, 65.6, 77.4],
+        "v11_se": [1.4, 1.9, 2.0, 1.8]
       }
     }
   },
