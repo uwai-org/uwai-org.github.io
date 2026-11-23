@@ -4,6 +4,7 @@ author: WAI
 date: 2026-11-20
 permalink: /blog/introducing-hls/
 custom_header: true
+toc: false
 math: true
 image: /assets/img/hls/framework.png
 image_alt: "The HLS framework: an agent builds a serving system in a GPU sandbox; its final commit serves a timed workload, and the recorded traces are verified, then scored."

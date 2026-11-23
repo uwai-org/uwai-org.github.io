@@ -10,10 +10,13 @@ layout: default
 </header>
 {%- endunless %}
 
+{%- comment %} A post can leave out its table of contents with `toc: false` in its front matter. {% endcomment %}
+{%- unless page.toc == false %}
 <nav id="TOC" role="doc-toc">
   <label for="toc-toggle" class="margin-toggle">Contents</label>
   <input type="checkbox" id="toc-toggle" class="margin-toggle">
 </nav>
+{%- endunless %}
 
 <main>
   {{ content }}
