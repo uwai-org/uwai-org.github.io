@@ -204,7 +204,7 @@ The released evaluation framework and trajectories make it possible to test how 
 
 ---
 
-*This post is also published at [hlsbench.com](https://hlsbench.com/blog/introducing-hls), with interactive figures, the leaderboard, and every run's full trajectory and source.*
+*This post is also published at [hlsbench.com](https://hlsbench.com/blog/introducing-hls).*
 
 [^kamahori2026vibeserve]: Keisuke Kamahori, Shihang Li, Simon Peter, and Baris Kasikci. "[VibeServe: Can AI Agents Build Bespoke LLM Serving Systems?](https://arxiv.org/abs/2605.06068)" arXiv, 2026.
 [^merrill2026terminalbench]: Mike A. Merrill, Alexander G. Shaw, Nicholas Carlini, et al. "[Terminal-Bench: Benchmarking Agents on Hard, Realistic Tasks in Command Line Interfaces](https://arxiv.org/abs/2601.11868)." arXiv:2601.11868, 2026.
