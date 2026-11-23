@@ -1080,3 +1080,14 @@ figure > video {
   .stat-row > p { grid-template-columns: repeat(2, 1fr); }
   .changes td:first-child { white-space: normal; }
 }
+
+/* "Introducing Humanity's Last System" (mirrored from hlsbench.com): each figure has a wide image and an image of
+   its phone layout, shown in its place on narrow screens; the leaderboard, which has no phone layout, scrolls
+   sideways there at a legible size. */
+.hls-narrow { display: none; }
+@media screen and (max-width: 760px) {
+  .hls-narrow { display: block; width: 100%; height: auto; margin-bottom: 12px; }
+  .hls-wide { display: none; }
+  .hls-scroll { overflow-x: auto; }
+  .hls-scroll img { width: 900px; max-width: none; }
+}
