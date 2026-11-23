@@ -32,7 +32,7 @@ November 20, 2026
 How good are coding agents at building inference systems *from scratch*? We introduce Humanity's Last System (HLS), an ultra-long-horizon agentic coding benchmark that gives frontier agents live GPU sandboxes with up to 8xH200s and up to 36 hours to build systems hyperspecialized to a model, hardware platform, and production workload. HLS introduces a token-level verifier that checks a submission against a trusted reference while allowing the numerical variation that occurs in real serving systems. We evaluate frontier proprietary and open models across text and multimodal inference tasks using production workloads. **The top-performing agent, Opus 5, outperforms the baseline in 71% of runs and achieves impressive speedups in some runs.** The rest trails far behind: no other agent beats the baseline in more than 24% of runs. We release the evaluation framework and over [150 trajectories](https://hlsbench.com/traces), comprising over *238,000 steps*, to support analysis of how agents develop hyperspecialized systems and how they could develop them better.
 :::
 
-::: {#figure-framework .wide .extra-wide}
+::: {#figure-framework}
 <img class="hls-narrow" src="{{ '/assets/img/hls/framework-narrow.png' | relative_url }}" alt="The HLS framework">
 
 ![**Figure 1. The HLS framework.** An agent receives the task specification and builds a serving system in a GPU sandbox. Its final commit is deployed in a fresh container and serves the task's timed workload, shown here with agentic coding's generator, whose Terminal-Bench 4 agents run their tools in live sandboxes. The outputs and timings recorded during that one run are used for both verification and scoring; a server that fails verification scores zero.]({{ '/assets/img/hls/framework.png' | relative_url }}){.hls-wide}
@@ -68,7 +68,7 @@ The choice determines which optimizations are acceptable. Agents can optimize ag
 
 For general-purpose text serving, downstream evaluations can be too narrow, noisy, or expensive to establish that model behavior is preserved. Our token-level verifier instead checks the tokens emitted under the timed workload by teacher-forcing the reference on the submission's trajectories. This exposes the verifier to the same concurrency, cache reuse, and context lengths that determine serving performance. Exact agreement is too strict a test because of batch nondeterminism and differences between kernel implementations. Too tolerant a margin, on the other hand, would accept servers whose errors degrade the model. HLS calibrates its tolerances from trusted implementations, including vLLM, SGLang, and vLLM-Omni, serving the task's workload.
 
-::: {#figure-verifier-comparison .wide .extra-wide}
+::: {#figure-verifier-comparison}
 <img class="hls-narrow" src="{{ '/assets/img/hls/verifier-comparison-narrow.png' | relative_url }}" alt="End-task accuracy misses real system defects">
 
 ![**Figure 2. End-task accuracy misses real system defects.** Our token-level verifier compares the output distribution at every token with a trusted reference implementation while tolerating numerical variation seen with kernel implementation choices and batch nondeterminism in serving. End-task accuracy compares only the answer with the answer key and misses many defective servers seen in our rollouts.]({{ '/assets/img/hls/verifier-comparison.png' | relative_url }}){.hls-wide}
@@ -86,13 +86,13 @@ Agents work in containers on NVIDIA HGX H200 systems with compilers, profilers, 
 
 Coding agents can build serving systems that outperform production engines, but success varies substantially across tasks and attempts. Opus 5 produces correct systems in 81% of runs and beats the baseline in 71%, achieving the highest maximum speedup on six of the seven tasks ([Figure 3](#figure-leaderboard)). Its strongest results include 25.87× on speech recognition, 4.92× on omni chat, and 2.40× on speech synthesis. It still fails to produce correct systems consistently across all tasks, making correctness verification essential when evaluating an agent's claimed speedups.
 
-::: {#figure-leaderboard .wide .extra-wide .hls-scroll}
+::: {#figure-leaderboard .hls-scroll}
 ![**Figure 3. Leaderboard.** Each task column shows a model's best speedup over the production baseline among its three 12-hour runs; 1× matches the baseline, a purple border marks a speedup above 1×, and a gray ✗ means no run passed verification. Following KernelBench ([Ouyang et al., ICML 2025](https://proceedings.mlr.press/v267/ouyang25a.html)), we define `fast_p` as the share of runs that pass verification and achieve a speedup greater than `p`. `fast_0` is the share of runs that pass verification, and `fast_1` is the share that pass verification and beat the production baseline. On [hlsbench.com](https://hlsbench.com), each cell opens the run's full trajectory and source.]({{ '/assets/img/hls/leaderboard.png' | relative_url }})
 :::
 
 To understand the differences between agents, we also examined how they used the same 12-hour development budget. Opus 5 runs averaged 2% idle time and typically continued testing after their last code edit, which came at a median of 9.6 hours. Opus 4.8 runs averaged 25% idle time, with a median last code edit at 6.2 hours. GPT 5.6 Sol, Kimi K3, and GLM 5.3 generally edited until the final one to two hours; their lower passing rates therefore cannot generally be explained by stopping early. New measurements dominated every model's time; repeats on unchanged code averaged only half an hour ([Figure 4](#figure-activity)).
 
-::: {#figure-activity .wide .extra-wide}
+::: {#figure-activity}
 <img class="hls-narrow" src="{{ '/assets/img/hls/activity-narrow.png' | relative_url }}" alt="Mean hours per run spent on each activity by model, and activity over time by model">
 <img class="hls-narrow" src="{{ '/assets/img/hls/activity-by-run-narrow.png' | relative_url }}" alt="Activity over time in each of Opus 5's runs">
 <img class="hls-wide" src="{{ '/assets/img/hls/activity.png' | relative_url }}" alt="Mean hours per run spent on each activity by model, and activity over time by model">
@@ -102,7 +102,7 @@ To understand the differences between agents, we also examined how they used the
 
 Across all agents, 48% of runs pass correctness and 23% exceed the baseline. Agentic coding remains the hardest task: only 33% of runs pass, and the best reaches 0.985×. At 24 hours, all five Opus 5 runs pass and beat the baseline on generic serving. Their geometric mean speedup is 1.97×, up from 1.46× among the two passing runs at 12 hours. Extending the budget to 36 hours raises the geometric mean speedup among passing runs to 2.24×, a 14% gain, while mean cost per attempt rises 36%, from \$664 to \$900 ([Figure 5](#figure-budget)). One of the five 36-hour runs fails. The longer budget improves the performance of passing runs, while 24 hours yields more above-baseline systems in these repeats.
 
-::: {#figure-budget .wide .extra-wide}
+::: {#figure-budget}
 <img class="hls-narrow" src="{{ '/assets/img/hls/budget-narrow.png' | relative_url }}" alt="Speedup versus development cost">
 
 ![**Figure 5. Speedup versus development cost.** Both panels vary the time budget for Opus 5 on generic serving at Max effort. The first plots geometric mean speedup among runs with nonzero scores against mean development cost per run. The second plots the maximum observed speedup against five times the mean development cost per run. Both cost measures include API tokens and GPU time across all runs, including failures. Labels show the number of runs, and dashed lines mark the production baseline.]({{ '/assets/img/hls/budget.png' | relative_url }}){.hls-wide}
@@ -110,7 +110,7 @@ Across all agents, 48% of runs pass correctness and 23% exceed the baseline. Age
 
 Opus 5 costs more per run than Kimi K3 (\$402 versus \$254), but its higher rate of correct, above-baseline systems (71% versus 24%) more than offsets that difference ([Figure 6](#figure-cost)). Dividing total development spending by the number of such systems gives about \$560 per result for Opus 5 and \$1,070 for Kimi K3 across the same task mix. A stronger, more expensive agent can therefore be the more economical choice once failed and below-baseline attempts are included. Opus 4.8 costs roughly as much per attempt as Opus 5 (\$418), yet beats the baseline in only 19% of runs; GPT 5.5 averages \$273 and does so in none. These estimates cover development; evaluation costs are excluded.
 
-::: {#figure-cost .wide .extra-wide}
+::: {#figure-cost}
 <img class="hls-narrow" src="{{ '/assets/img/hls/cost-narrow.png' | relative_url }}" alt="Cost and success by model">
 
 ![**Figure 6. Cost and success by model.** Each point is one model over its 21 main-evaluation runs: seven tasks, three 12-hour runs each. The horizontal axis is the mean cost of a run, API tokens plus the run's reserved H200s at \$5.97 per GPU-hour; the vertical axis is the share of runs that passed verification and beat the baseline. Evaluation costs are not included.]({{ '/assets/img/hls/cost.png' | relative_url }}){.hls-wide}
@@ -120,7 +120,7 @@ Opus 5 costs more per run than Kimi K3 (\$402 versus \$254), but its higher rate
 
 Better prefix reuse and speculative decoding let the generic-serving and deep-research submissions beat vLLM despite slower underlying engines. In generic serving, vLLM's shared memory pool for attention and recurrent state restricts prefix reuse to coarse boundaries. The Opus 5 submission checkpoints recurrent state more finely, increasing the reused share of prompt tokens from 19% to 39%. It also enables the model's multi-token prediction head for speculation. Together, these changes take the system from 0.92× to 1.91× baseline performance ([Figure 7](#figure-ablation)).
 
-::: {#figure-ablation .wide .extra-wide}
+::: {#figure-ablation}
 <img class="hls-narrow" src="{{ '/assets/img/hls/ablation-narrow.png' | relative_url }}" alt="Generic-serving speedup breakdown">
 
 ![**Figure 7. Generic-serving speedup breakdown.** The best Opus 5 generic-serving server against vLLM. With speculation and its prefix reuse disabled, the submission's engine runs at 0.92× vLLM's speed; speculative decoding and finer-grained prefix reuse multiply that by 1.64 and 1.27, reaching the graded 1.91×. Each factor was measured by disabling its mechanism on the full workload, averaged over both orders of adding the two.]({{ '/assets/img/hls/ablation.png' | relative_url }}){.hls-wide}
@@ -128,7 +128,7 @@ Better prefix reuse and speculative decoding let the generic-serving and deep-re
 
 Reducing CPU dispatch overhead offered another large gain, especially under concurrent arrivals. In speech recognition, admitting new audio forced the baseline decoder out of CUDA graphs ([Figure 8](#figure-asr-step)). The submission captured admission and decoding separately; disabling either capture increased reply latency about 4.3×. This exposes a limitation of optimizing decode in isolation: an efficient decode path can still be interrupted by expensive request admission. Under the task's traffic, those interruptions slowed active requests and increased queueing, magnifying the end-to-end benefit of graph capture.
 
-::: {#figure-asr-step .wide .extra-wide}
+::: {#figure-asr-step}
 <img class="hls-narrow" src="{{ '/assets/img/hls/asr-step-narrow.png' | relative_url }}" alt="Speech-recognition decoder timelines">
 
 ![**Figure 8. Speech-recognition decoder timelines.** A 3.2 ms window of decoding in each speech-recognition server at 52 requests per second, profiled with Nsight Systems. vLLM launches decoder kernels one at a time from the CPU. The Opus 5 submission launches a full decode step as a single CUDA graph of 326 kernels.]({{ '/assets/img/hls/asr-step.png' | relative_url }}){.hls-wide}
@@ -146,7 +146,7 @@ The first design decision in a run is the serving engine itself: whether to writ
 
 Across all performance decisions, the faster and slower halves of passing runs within each task measured alternatives at similar rates: 35% and 38%. Faster runs tested mechanisms such as continuous batching or speculative decoding; slower runs often adjusted batch caps, wait windows, and chunk sizes within an unchanged engine. This suggests that choosing more consequential experiments could matter more than simply running more of them. Requiring an early comparison of viable batching, execution, or GPU-placement strategies could keep agents from spending most of the budget tuning a poor initial choice.
 
-::: {#figure-decisions .wide .extra-wide}
+::: {#figure-decisions}
 <img class="hls-narrow" src="{{ '/assets/img/hls/decisions-narrow.png' | relative_url }}" alt="Timing and testing of design decisions">
 
 ![**Figure 9. Timing and testing of design decisions.** The 1,680 performance decisions in the 81 runs that passed verification, by kind. Left: the median time of the decision, from the start of the run. Right: the share of decisions made by measuring alternatives against each other. The choice between writing an engine and building on a library, made first, was almost never measured.]({{ '/assets/img/hls/decisions.png' | relative_url }}){.hls-wide}
@@ -158,7 +158,7 @@ Reducing CPU dispatch overhead also required agents to work through execution fa
 
 We compared self-estimated and graded speedups in 99 of 126 main runs. In the other runs, the agent never ran a comparable benchmark or the submission failed before producing a timing result. The median ratio of self-estimated to graded speedup was 1.07 for correct systems above baseline, 1.76 for correct systems below it, and 4.18 for failed systems ([Figure 10](#figure-self-estimate)). Slower and failed runs thus tended to look substantially better in the agent's tests than under evaluation. For failed systems, the graded speedup is the grader's timing bound before the zero-score penalty.
 
-::: {#figure-self-estimate .wide .extra-wide}
+::: {#figure-self-estimate}
 <img class="hls-narrow" src="{{ '/assets/img/hls/self-estimate-narrow.png' | relative_url }}" alt="Self-estimated versus graded speedup">
 
 ![**Figure 10. Self-estimated versus graded speedup.** Each point shows the estimated speedup divided by the graded speedup for one of the 99 runs with comparable measurements. The horizontal axis uses a log scale, and points right of 1× overestimate speedup. Vertical bars mark each group's median. For failed runs, the graded speedup is the grader's timing bound before the zero score.]({{ '/assets/img/hls/self-estimate.png' | relative_url }}){.hls-wide}
@@ -166,7 +166,7 @@ We compared self-estimated and graded speedups in 99 of 126 main runs. In the ot
 
 Short tests hid queue buildup, capped outputs reduced decoding work, and repeated requests inflated cache-hit rates. These conditions also missed failures involving long outputs, cache eviction, and concurrent sessions. Runs that reproduced the specified arrivals passed 66% of the time, versus 22% otherwise; realistic response lengths, load tests as long as the graded workload, and clean-checkout validation showed similar associations ([Figure 11](#figure-test-coverage)). Requiring representative development tests could improve correctness and speed by exposing problems earlier and directing optimization toward the server's actual bottlenecks.
 
-::: {#figure-test-coverage .wide .extra-wide}
+::: {#figure-test-coverage}
 <img class="hls-narrow" src="{{ '/assets/img/hls/test-coverage-narrow.png' | relative_url }}" alt="Pass rate by test coverage">
 
 ![**Figure 11. Pass rate by test coverage.** Pass rates for 125 graded main-evaluation runs, grouped by whether the agent's self-test covered each condition. A self-test uses realistic response lengths when it lets the server generate full responses without cutting them short.]({{ '/assets/img/hls/test-coverage.png' | relative_url }}){.hls-wide}
@@ -178,7 +178,7 @@ In 85% of the 65 failed main-evaluation runs, development logs had already shown
 
 In 78% of these 65 failed runs, the agent's first response was to dismiss the anomaly or patch only the site where it appeared; 5% investigated the cause and checked related sites ([Figure 12](#figure-failures)). The remaining 17% had no recorded related warning, insufficient evidence to classify the warning, or an unclassified response. With related warnings already present in most failed runs, more systematic debugging could improve reliability without access to held-out tests. A harness could require agents to diagnose each observed anomaly and verify the fix with regression tests covering related inputs, code paths, and concurrent sessions.
 
-::: {#figure-failures .wide .extra-wide}
+::: {#figure-failures}
 <img class="hls-narrow" src="{{ '/assets/img/hls/failures-narrow.png' | relative_url }}" alt="Responses to early warnings in failed runs">
 
 ![**Figure 12. Responses to early warnings in failed runs.** The 65 main-evaluation runs that failed final evaluation, by the agent's first response when its own tests showed an error with the same failure mechanism as the final failure, or a closely related one. Checking related code means looking for the same failure mechanism in other code paths that use the affected logic. The gray bar holds the runs with no such error recorded and those whose evidence or response could not be classified.]({{ '/assets/img/hls/failures.png' | relative_url }}){.hls-wide}
