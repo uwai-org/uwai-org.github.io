@@ -16,7 +16,7 @@ description: >-
 <h1 class="title">Introducing Humanity's Last System</h1>
 
 :::: {.byline}
-Steven\ Gao^1^, Rulin\ Shao^1^, Keisuke\ Kamahori^1^, Yuetai\ Li^1^, Yufei\ Gao^1^, Atindra\ Jha^2^, Junjie\ Oscar\ Yin^1^, Shihang\ Li^1^, Radha\ Poovendran^1^, Jure\ Leskovec^2^, Hannaneh\ Hajishirzi^1^, Pang\ Wei\ Koh^1^, Luke\ Zettlemoyer^1^, Stephanie\ Wang^1^, Baris\ Kasikci^1^
+Steven\ Gao^1^, Rulin\ Shao^1^, Keisuke\ Kamahori^1^, Yuetai\ Li^1^, Yufei\ Gao^1^, Atindra\ Jha^2^, Junjie\ Oscar\ Yin^1^, Shihang\ Li^1^, Kan\ Zhu^1^, Radha\ Poovendran^1^, Jure\ Leskovec^2^, Hannaneh\ Hajishirzi^1^, Pang\ Wei\ Koh^1^, Luke\ Zettlemoyer^1^, Stephanie\ Wang^1^, Baris\ Kasikci^1^
 
 ^1^University of Washington · ^2^Stanford University
 ::::
